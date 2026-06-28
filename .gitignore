@@ -1,0 +1,15 @@
+# Entorno virtual
+.venv/
+
+# Credenciales
+.env
+
+# Caches
+__pycache__/
+*pyc
+
+# Mac
+.DS_STORE
+
+# Data
+/data
