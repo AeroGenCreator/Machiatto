@@ -1,8 +1,8 @@
-# 🔥 ClayPy _[PanCakesORM]() & [Flet]()_ Framework para ERP's
+# ¡Bienvenido a Machiatto!
 
 ![image](assets/banner.png)
 
-A traves de _ClayPy_ es posible el desarrollo de paquetes SQL -> LOGICA -> FLET a traves de el acomplamiento y desacoplamiento de modulos almacenados en el directorio packages.
+**Machiatto** es un motor de codigo abierto pensado para la construcción rápida de software `aplicación` para pequeñas y medianas empresas. En la actualidad **machiatto** utiliza como motor de bases de datos `Sqlite3` impulsado por `PanCakesORM` como el cerebro de coordinación de modelos y logica de consultas y relaciones. El `frontend` de **machiatto** esta montado sobre componentes `Flet` los cuales han sido construidos para representar los modelos declarados brindando un tipo de vista `Tabla-Formulario`. Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Python3+`, olvdidate de `HTML`, `CSS`, `JavaScript`, `SQL`, o algun otro lenguaje para la construccion de aplicaciones, con `Machiatto` tendras una caja de herramientas poderosa para la construcción de software.
 
 ## Inicion Rapido
 
@@ -32,7 +32,7 @@ PACKAGE = {
 
 ## Graphic User Interface
 
-_ClayPy_ Renderiza un side menu y un contenedor de elemento a izquierda y derecha de la pantalla. A traves de de un gestor de modulos, _ClayPay_ monta y desmonta paquetes de ERP, (CRM, Contactos, Contabilidad, RH, etc ...).
+**Machiatto** Renderiza un side menu y un contenedor de elemento a izquierda y derecha de la pantalla. A traves de de un gestor de modulos, **Machiatto** monta y desmonta paquetes de ERP, (CRM, Contactos, Contabilidad, RH, etc ...).
 
 Cada modulo declaradado a travez del `__manifest__.py` montara sus vistas, logica, modelos. ClayPay unicamente se encargara de gestionar rutas, renderizar elementos GUI, y de proveer al programador de algunos elementos extra como `DataTableORM` una clase que renderiza el siguiente menu al pasarle una paquete de datos `container` nativo de `PanCakesORM`. 
 
