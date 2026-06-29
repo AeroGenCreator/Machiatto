@@ -6,10 +6,8 @@ from typing import List
 # Modulos Terceros
 import flet as ft
 
-# Propios
+# Modulos Pancakes
 from pancakes.models.model import PanCakesORM
-
-from .search_bar_orm import SearchBarORM
 
 # datetime.now().astimezone() detecta automáticamente el offset del sistema
 fecha_local = datetime.datetime.now().astimezone()
@@ -44,18 +42,18 @@ class DatatableORM(ft.Column):
     def __init__(
         self,
         model: PanCakesORM,
-        controllers: List = None,
-        search_bar: SearchBarORM = None
+        controllers: List = None
     ):
         super().__init__()
         self.model = model
         self.controllers = controllers
-        self.search_bar = search_bar
+        self.search_bar = None
+        self.name_domain = None
 
         self.current_page = 1
         self.max_rows = 15
         self.container = None
-        self.table = None
+        self.table = self.model._table
         self.columns = []
         self.flet_columns = []
         self.rows = []
@@ -75,6 +73,7 @@ class DatatableORM(ft.Column):
         self._construct_flet_columns_()
         self._construct_flet_rows_()
         self._vector_length_()
+        self._search_bar_widget_()
         self._header_container_widget_()
         self._create_entry_widget_()
         self._table_widget_()
@@ -95,11 +94,19 @@ class DatatableORM(ft.Column):
 
     def _fetch_data_(self) -> None:
         """Carga toda la tabla en memoria"""
-        self.container = self.model.chunk(**self.chunk).all().container()
+        if self.name_domain is None:
+            self.container = self.model.chunk(**self.chunk).all().container()
+        else:
+            self.container = (
+                self.model
+                .chunk(**self.chunk)
+                .filter(**self.name_domain)
+                .all()
+                .container()
+            )
 
     def _construct_flet_columns_(self) -> None:
         """Extracción de columnas; Lista de columnas Flet"""
-        self.table = self.model._table
         self.columns = []
         for column, metadata in self.container[self.table].items():
             validate = ((column != "@main_table@"), (column != "@depends@"))
@@ -138,24 +145,77 @@ class DatatableORM(ft.Column):
         """Largo del query actual (vector)"""
         self.length = len(self.rows) if self.rows else 0
 
+    def _word_pattern_search_(self, pattern):
+        """ Query a la base de datos; registros que coincidan con patron """
+        name_field = self.model._metadata[self.table]["columns"][1]
+        kwargs = {f"{self.table}__{name_field}__like": f"%{pattern}%"}
+        row, col = self.model.filter(**kwargs).all().raw(align=True)
+        return row[1] if row else []
+
+    async def _handle_tile_click_(self, e) -> None:
+        import ipdb; ipdb.set_trace()
+        selection = e.control.data
+        self.search_bar.value = selection
+        name_field = self.model._metadata[self.table]["columns"][1]
+        self.name_domain = {
+            f"{self.table}__{name_field}__like": selection
+        }
+        self._fetch_data_()
+        self._construct_flet_rows_()
+        self.datatable.rows = self.flet_rows
+        await self.search_bar.close_view()
+        self.update()
+
+    def _build_search_bar_tiles_(self, items):
+        return [
+            ft.ListTile(
+                title=ft.Text(item),
+                data=item,
+                on_click=self._handle_tile_click_,
+            )
+            for item in items
+        ]
+
+    def handle_search_bar_change(self, e) -> None:
+        pattern = e.control.value
+        options = self._word_pattern_search_(pattern=pattern)
+        if options:
+            self.search_bar.controls = (
+                self._build_search_bar_tiles_(items=options)
+            )
+
+    async def _handle_search_bar_tap_(self, e) -> None:
+        await self.search_bar.open_view()
+
+    def _search_bar_widget_(self):
+        self.search_bar = ft.SearchBar(
+            bar_hint_text="Filter by record name...",
+            view_hint_text="Type a record name...",
+            on_change=self.handle_search_bar_change,
+            on_tap=self._handle_search_bar_tap_
+        )
+
     def _header_container_widget_(self) -> None:
         """Contiene el contador de paagina"""
 
         # Contador Numerico
         self.counter = ft.Text(value=self.current_page)
         # Conjunto de componentes (boton, numero, boton)
-        self.header_container = ft.Container(
+        self.top_container = ft.Container(
             content=ft.Row(
                 controls=[
                     ft.Button(content="-", on_click=self._counter_manager_),
                     self.counter,
                     ft.Button(content="+", on_click=self._counter_manager_),
-                ]
-            )
+                ],
+                scroll=ft.ScrollMode.ADAPTIVE
+            ),
+            border_radius=5,
+            expand=10
         )
-        if self.search_bar is None:
-            search_bar = SearchBarORM(model=self.model)
-            self.header_container.content.controls.append(search_bar)
+        # Se monta la barra de busqueda en el header.
+        if self.search_bar is not None:
+            self.top_container.content.controls.append(self.search_bar)
 
     def _create_entry_widget_(self) -> None:
         """Boton de nuevo registro, genera instancia de formulario vacio"""
@@ -168,7 +228,8 @@ class DatatableORM(ft.Column):
                         icon=ft.Icons.ADD,
                     )
                 ]
-            )
+            ),
+            expand=2
         )
 
     def _table_widget_(self):
@@ -189,7 +250,8 @@ class DatatableORM(ft.Column):
             content=ft.ListView(
                 controls=[
                     ft.Row(
-                        controls=[self.datatable], scroll=ft.ScrollMode.ADAPTIVE
+                        controls=[self.datatable],
+                        scroll=ft.ScrollMode.ADAPTIVE
                     )
                 ],
                 expand=True,
@@ -737,7 +799,7 @@ class DatatableORM(ft.Column):
     # === CAPA SUPERIOR; MONTAR WIDGETS ===
     def _layout_(self) -> None:
         header = ft.Row(
-            controls=[self.header_container, self.create_entry_container],
+            controls=[self.top_container, self.create_entry_container],
             expand=1,
         )
         content = ft.Row(
