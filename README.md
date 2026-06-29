@@ -1,10 +1,10 @@
-# ¡Bienvenido a Machiatto!
+# ¡Bienvenido a Machiatto! ☕
 
 ![image](assets/banner.png)
 
 **Machiatto** es un motor de codigo abierto pensado para la construcción rápida de software `aplicación` para pequeñas y medianas empresas. En la actualidad **machiatto** utiliza como motor de bases de datos `Sqlite3` impulsado por `PanCakesORM` como el cerebro de coordinación de modelos y logica de consultas y relaciones. El `frontend` de **machiatto** esta montado sobre componentes `Flet`, los cuales han sido construidos para representar modelos, brindando vistas de tipo `Tabla-Formulario`. 
 
-Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Python3+`, olvdidate de `HTML`, `CSS`, `JavaScript`, `SQL`, o algun otro lenguaje para la construccion de aplicaciones, con `Machiatto` tendras una caja de herramientas poderosa para la construcción de software empresarial.
+Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Python3+`, olvidate de `HTML`, `CSS`, `JavaScript`, `SQL`, o algun otro lenguaje para la construccion de aplicaciones, con `Machiatto` tendras una caja de herramientas poderosa para la construcción de software empresarial.
 
 ## Inicion Rapido
 
@@ -38,7 +38,7 @@ PACKAGE = {
 
 ## Graphic User Interface
 
-**Machiatto** aprovehca la belleza del material design para entregar un una GUI responsiva, optimizada, y limpia.
+**Machiatto** aprovehca la belleza del material design para entregar una GUI responsiva, optimizada, y limpia.
 
 ![image](assets/application/mounted-module.png)
 
