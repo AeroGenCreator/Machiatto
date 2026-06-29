@@ -9,6 +9,8 @@ import flet as ft
 # Propios
 from pancakes.models.model import PanCakesORM
 
+from .search_bar_orm import SearchBarORM
+
 # datetime.now().astimezone() detecta automáticamente el offset del sistema
 fecha_local = datetime.datetime.now().astimezone()
 
@@ -40,12 +42,15 @@ class DatatableORM(ft.Column):
     """
 
     def __init__(
-        self, model: PanCakesORM, controllers: List = None, filters: List = None
+        self,
+        model: PanCakesORM,
+        controllers: List = None,
+        search_bar: SearchBarORM = None
     ):
         super().__init__()
         self.model = model
         self.controllers = controllers
-        self.filters = filters
+        self.search_bar = search_bar
 
         self.current_page = 1
         self.max_rows = 15
@@ -70,7 +75,7 @@ class DatatableORM(ft.Column):
         self._construct_flet_columns_()
         self._construct_flet_rows_()
         self._vector_length_()
-        self._page_counter_widget_()
+        self._header_container_widget_()
         self._create_entry_widget_()
         self._table_widget_()
         self._table_container_()
@@ -133,13 +138,13 @@ class DatatableORM(ft.Column):
         """Largo del query actual (vector)"""
         self.length = len(self.rows) if self.rows else 0
 
-    def _page_counter_widget_(self) -> None:
+    def _header_container_widget_(self) -> None:
         """Contiene el contador de paagina"""
 
         # Contador Numerico
         self.counter = ft.Text(value=self.current_page)
         # Conjunto de componentes (boton, numero, boton)
-        self.page_counter_container = ft.Container(
+        self.header_container = ft.Container(
             content=ft.Row(
                 controls=[
                     ft.Button(content="-", on_click=self._counter_manager_),
@@ -148,6 +153,9 @@ class DatatableORM(ft.Column):
                 ]
             )
         )
+        if self.search_bar is None:
+            search_bar = SearchBarORM(model=self.model)
+            self.header_container.content.controls.append(search_bar)
 
     def _create_entry_widget_(self) -> None:
         """Boton de nuevo registro, genera instancia de formulario vacio"""
@@ -729,7 +737,7 @@ class DatatableORM(ft.Column):
     # === CAPA SUPERIOR; MONTAR WIDGETS ===
     def _layout_(self) -> None:
         header = ft.Row(
-            controls=[self.page_counter_container, self.create_entry_container],
+            controls=[self.header_container, self.create_entry_container],
             expand=1,
         )
         content = ft.Row(

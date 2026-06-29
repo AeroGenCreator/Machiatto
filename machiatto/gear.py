@@ -130,6 +130,19 @@ class MainGear(ft.Row):
                 # Modulo como atributo, metadata de navegacion como contenido.
                 setattr(self, modulo, navigation)
 
+        sidebar_botones.append(
+            ft.Container(
+                content=ft.Image(
+                    src="../assets/application/icon.png",
+                    fit=ft.BoxFit.CONTAIN,
+                ),
+                width=128,
+                height=128,
+                clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
+                border_radius=12
+            )
+        )
+
         # Aqui se maneja la arquitectura de montado
         self.sidebar = ft.Container(
             content=ft.ListView(
@@ -139,7 +152,9 @@ class MainGear(ft.Row):
             ),
             padding=10,
             border_radius=10,
-            expand=2
+            expand=2,
+            bgcolor=ft.Colors.SURFACE_CONTAINER_LOW
         )
+
         self.controls = [self.sidebar, self.contenido_vista]
         self.pagina.update()

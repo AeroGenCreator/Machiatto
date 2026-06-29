@@ -1,5 +1,3 @@
-import flet as ft
-
 from machiatto.datatable_orm import DatatableORM
 
 from .. import models
