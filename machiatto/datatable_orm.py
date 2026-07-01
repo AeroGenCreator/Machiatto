@@ -9,11 +9,13 @@ import flet as ft
 # Modulos Pancakes
 from pancakes.models.model import PanCakesORM
 
-# datetime.now().astimezone() detecta automáticamente el offset del sistema
-fecha_local = datetime.datetime.now().astimezone()
 
-# Extraemos la información de la zona horaria (el offset)
-tz_sistema = fecha_local.tzinfo
+def calculo_de_fecha():
+    # datetime.now().astimezone() detecta automáticamente el offset del sistema
+    fecha_local = datetime.datetime.now().astimezone()
+
+    # Extraemos la información de la zona horaria (el offset)
+    return fecha_local.tzinfo
 
 
 class DatatableORM(ft.Column):
@@ -413,7 +415,7 @@ class DatatableORM(ft.Column):
             elif isinstance(field, ft.Button):
                 value = field.data.value
                 if isinstance(value, datetime.datetime):
-                    value = value.replace(tzinfo=tz_sistema).date()
+                    value = value.replace(tzinfo=calculo_de_fecha()).date()
             elif isinstance(field, ft.Dropdown):
                 value = field.value
                 TYPE = MODEL._metadata[TABLE]["schema"][column]["metadata"][
@@ -456,7 +458,7 @@ class DatatableORM(ft.Column):
                     return
 
                 value = datetime.datetime.combine(date_part, time_part)
-                value = value.replace(tzinfo=tz_sistema)
+                value = value.replace(tzinfo=calculo_de_fecha())
                 timestamp_union[position] = value
 
         merged = data | timestamp_union
@@ -475,7 +477,6 @@ class DatatableORM(ft.Column):
             for index, elemento in enumerate(data, start=1):
                 arg = f"{TABLE}__{self.columns[index]}__{self.columns[0]}__same"
                 kwargs.update({arg: (elemento, current_row_index)})
-            import ipdb; ipdb.set_trace()
             self.model.u(**kwargs)
         else:
             # kwargs - modelo actual

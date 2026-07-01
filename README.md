@@ -42,6 +42,10 @@ PACKAGE = {
 
 ![image](assets/application/mounted-module.png)
 
+Adaptativo a el tema utilizado por el sistema operativo.
+
+![image](assets/application/themed.png)
+
 ## 🏗️ Jerarquía de directorios
 
 ```txt

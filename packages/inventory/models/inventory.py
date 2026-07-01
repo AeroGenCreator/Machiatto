@@ -11,7 +11,9 @@ class Inventory(PanCakesORM):
     price = datatype.Float(comment="Precio Producto")
     saleable = datatype.Bool(comment="Es Vendible")
     extras = datatype.Text(comment="Notas Extras")
-    sold = datatype.TimeStamp(comment="Fecha Hora Venta")
+    sold = datatype.TimeStamp(
+        comment="Fecha Hora Venta", compute=lambda x: datatype.TimeStamp.now()
+    )
     registry = datatype.Date(comment="Fecha Ingreso")
     category_id = datatype.ForeignKey(
         comment="Producto Categoria M:1",
