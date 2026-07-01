@@ -39,11 +39,7 @@ class DatatableORM(ft.Column):
 
     """
 
-    def __init__(
-        self,
-        model: PanCakesORM,
-        controllers: List = None
-    ):
+    def __init__(self, model: PanCakesORM, controllers: List = None):
         super().__init__()
         self.model = model
         self.controllers = controllers
@@ -98,8 +94,7 @@ class DatatableORM(ft.Column):
             self.container = self.model.chunk(**self.chunk).all().container()
         else:
             self.container = (
-                self.model
-                .chunk(**self.chunk)
+                self.model.chunk(**self.chunk)
                 .filter(**self.name_domain)
                 .all()
                 .container()
@@ -146,20 +141,27 @@ class DatatableORM(ft.Column):
         self.length = len(self.rows) if self.rows else 0
 
     def _word_pattern_search_(self, pattern):
-        """ Query a la base de datos; registros que coincidan con patron """
+        """Query a la base de datos; registros que coincidan con patron"""
+        # Siempre se toma la primer columna del modelo como el nombre.
         name_field = self.model._metadata[self.table]["columns"][1]
         kwargs = {f"{self.table}__{name_field}__like": f"%{pattern}%"}
         row, col = self.model.filter(**kwargs).all().raw(align=True)
+        # Si no hay data devuelve lista vacia.
         return row[1] if row else []
 
     async def _handle_tile_click_(self, e) -> None:
-        import ipdb; ipdb.set_trace()
+        """Evento: click sobre item de la searchbar"""
+
+        # Item seleccionado:
         selection = e.control.data
+        # Se asigna el item como valor de la busqueda.
         self.search_bar.value = selection
+        # Columna nombre del modelo actual.
         name_field = self.model._metadata[self.table]["columns"][1]
-        self.name_domain = {
-            f"{self.table}__{name_field}__like": selection
-        }
+        # Dominio del query:
+        domain = {f"{self.table}__{name_field}__like": selection}
+        self.name_domain = domain
+        # Se extrae la información:
         self._fetch_data_()
         self._construct_flet_rows_()
         self.datatable.rows = self.flet_rows
@@ -180,8 +182,8 @@ class DatatableORM(ft.Column):
         pattern = e.control.value
         options = self._word_pattern_search_(pattern=pattern)
         if options:
-            self.search_bar.controls = (
-                self._build_search_bar_tiles_(items=options)
+            self.search_bar.controls = self._build_search_bar_tiles_(
+                items=options
             )
 
     async def _handle_search_bar_tap_(self, e) -> None:
@@ -192,7 +194,7 @@ class DatatableORM(ft.Column):
             bar_hint_text="Filter by record name...",
             view_hint_text="Type a record name...",
             on_change=self.handle_search_bar_change,
-            on_tap=self._handle_search_bar_tap_
+            on_tap=self._handle_search_bar_tap_,
         )
 
     def _header_container_widget_(self) -> None:
@@ -208,10 +210,10 @@ class DatatableORM(ft.Column):
                     self.counter,
                     ft.Button(content="+", on_click=self._counter_manager_),
                 ],
-                scroll=ft.ScrollMode.ADAPTIVE
+                scroll=ft.ScrollMode.ADAPTIVE,
             ),
             border_radius=5,
-            expand=10
+            expand=10,
         )
         # Se monta la barra de busqueda en el header.
         if self.search_bar is not None:
@@ -229,7 +231,7 @@ class DatatableORM(ft.Column):
                     )
                 ]
             ),
-            expand=2
+            expand=2,
         )
 
     def _table_widget_(self):
@@ -250,8 +252,7 @@ class DatatableORM(ft.Column):
             content=ft.ListView(
                 controls=[
                     ft.Row(
-                        controls=[self.datatable],
-                        scroll=ft.ScrollMode.ADAPTIVE
+                        controls=[self.datatable], scroll=ft.ScrollMode.ADAPTIVE
                     )
                 ],
                 expand=True,
@@ -394,6 +395,10 @@ class DatatableORM(ft.Column):
                     self.timestamp_error(widget)
                     return
 
+            # Si en el formulario existe llave de 1:M saltar.
+            elif len(PARTS) == 1:
+                continue
+
             # Resto de widgets
             else:
                 column = PARTS[1]
@@ -470,6 +475,7 @@ class DatatableORM(ft.Column):
             for index, elemento in enumerate(data, start=1):
                 arg = f"{TABLE}__{self.columns[index]}__{self.columns[0]}__same"
                 kwargs.update({arg: (elemento, current_row_index)})
+            import ipdb; ipdb.set_trace()
             self.model.u(**kwargs)
         else:
             # kwargs - modelo actual
@@ -787,7 +793,9 @@ class DatatableORM(ft.Column):
         for k, v in MODEL.schema.items():
             value = v["metadata"]["sql_type"]
             if value == ONE2MANY:
-                controls.append(ft.TextField(value=value))
+                controls.append(
+                    ft.TextField(value=value, key=f"1:M{str(uuid.uuid4())}")
+                )
 
         # Se declara una vista de scroll vertical para los formularios.
         self.form_widget = ft.ListView(
