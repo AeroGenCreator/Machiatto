@@ -359,7 +359,6 @@ class DatatableORM(ft.Column):
         self.update()
 
     def save_changes(self, e, update=False) -> None:
-
         # Status Barra lateral
         status = self.sidebar_container.visible
 
@@ -397,7 +396,7 @@ class DatatableORM(ft.Column):
                     self.timestamp_error(widget)
                     return
 
-            # Si en el formulario existe llave de 1:M saltar.
+            # Si en el formulario existe llave de 1:N saltar.
             elif len(PARTS) == 1:
                 continue
 
@@ -794,8 +793,15 @@ class DatatableORM(ft.Column):
         for k, v in MODEL.schema.items():
             value = v["metadata"]["sql_type"]
             if value == ONE2MANY:
+                COL_SCHEMA = [f._schema for f in MODEL._fields if f._name == k]
+                # Con el esquema se puede acceder a la segunda tabla.
+                # Con lasegunda tabla se puede acceder al modelo.
+                # Crear un objeto renderizado de (Tablas) para campos 1:N
+                # No se puede este mismo porque va a generar circular reference.
                 controls.append(
-                    ft.TextField(value=value, key=f"1:M{str(uuid.uuid4())}")
+                    ft.TextField(
+                        value=COL_SCHEMA, key=f"1:M{str(uuid.uuid4())}"
+                    )
                 )
 
         # Se declara una vista de scroll vertical para los formularios.

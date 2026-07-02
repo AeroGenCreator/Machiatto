@@ -1,4 +1,4 @@
-# ¡Bienvenido a Machiatto! ☕
+# ¡Bienvenido a Machiatto!
 
 ![image](assets/banner.png)
 
@@ -6,7 +6,7 @@
 
 Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Python3+`, olvidate de `HTML`, `CSS`, `JavaScript`, `SQL`, o algun otro lenguaje para la construccion de aplicaciones, con `Machiatto` tendras una caja de herramientas poderosa para la construcción de software empresarial.
 
-## Inicion Rapido
+## Inicion Rapido ☕
 
 ### Manifest
 
@@ -42,7 +42,9 @@ PACKAGE = {
 
 ![image](assets/application/mounted-module.png)
 
-Adaptativo a el tema utilizado por el sistema operativo.
+**Machiatto** tambien se adapta al tema del sistema operativo.
+
+- Puedes configurar paletas de colores por defecto para tu aplicacion.
 
 ![image](assets/application/themed.png)
 
@@ -55,5 +57,4 @@ machiatto
 ├── datatable_orm.py
 ├── gear.py
 ├── package_loader.py
-└── search_bar_orm.py
 ``` 
