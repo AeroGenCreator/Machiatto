@@ -506,9 +506,50 @@ class DatatableORM(ft.Column):
         self.datatable.rows = self.flet_rows
         self.update()
 
+    def delete_entry(self):
+        self.page.pop_dialog()
+        name = self.model._metadata[self.table]["columns"][0]
+        data = None
+        for wid in self.form_controls:
+            PARTS = wid.key.split("__")
+            if name in PARTS:
+                data = wid.value
+        if data is not None and isinstance(data, int):
+            domain = {f"{self.table}__{name}__same": data}
+            self.model.d(**domain)
+            status = self.sidebar_container.visible
+            if status:
+                self.sidebar_container.visible = False
+                self.sidebar_container.content = None
+            # Refrescar el frontend
+            self._calculate_chunk_()
+            self._fetch_data_()
+            self._construct_flet_rows_()
+            self._vector_length_()
+            self.datatable.rows = self.flet_rows
+        else:
+            self.impossible_delete()
+        self.update()
+
+    def accept_changes(self):
+        self.alert.title = ft.Text(value="Acción Peligrosa")
+        msg = (
+            "Estas por eliminar un registro de manera permanente "
+            "de la base de datos. Aceptar esta accion hara imposible "
+            "cualquier tipo de respaldo futuro."
+        )
+        accept = ft.Button(
+            content=ft.Text("Aceptar"),
+            on_click=self.delete_entry
+        )
+        self.alert.content = ft.Text(value=msg)
+        self.alert.actions = [accept]
+        self.alert.open = True
+        self.page.show_dialog(self.alert)
+
     def required_alert(self, campos: list | str = "Aun No Hay Campos") -> None:
         """Funcion construye la alerta de campo requerido en tiempo real."""
-        self.alert.title = "Restriccion"
+        self.alert.title = ft.Text(value="Restricción")
         self.alert.content = ft.Text(
             value=f"Los siguientes campos son requeridos: {campos}"
         )
@@ -539,6 +580,24 @@ class DatatableORM(ft.Column):
         self.alert.actions = [self.close_alert]
         self.alert.open = True
         self.page.show_dialog(self.alert)
+
+    def impossible_delete(self):
+        self.alert.title = ft.Text(value="Imposible Eliminar")
+        msg = (
+            "El registro no se pudo eliminar "
+            "No se encontro un indice numerico por el cual filtrar. "
+            "Algún otro error como restriccion SQL puede ser el culpable."
+            "Revisar función 'delete_entry'."
+        )
+        self.alert.content = ft.Text(msg)
+        self.alert.actions = [
+            ft.Button(
+                content=ft.Text("Cerrar"),
+                on_click=lambda self: self.page.pop_dialog()
+            )
+        ]
+        self.alert.open = True
+        self.page.show_dialog()
 
     # === FORMULARIO ===
 
@@ -806,16 +865,23 @@ class DatatableORM(ft.Column):
         # Controles formulario de campo, fusion con controles estaticos.
         controls.extend(self.form_controls)
 
-        # Boton de guardar (Comienzo de controladores)
-        controls.insert(
-            0,
-            ft.Button(
+        # Estetica: Boton "Guardar" y "Eliminar" siempre al comienzo.
+        form_header = ft.Row()
+        save_button = ft.Button(
                 content="Guardar Cambios",
                 key="save",
                 icon=ft.Icons.SAVE,
                 on_click=lambda e: self.save_changes(e, update=UPDATE),
-            ),
-        )
+            )
+
+        delete_button = ft.Button(
+                content=ft.Text("Eliminar Registro"),
+                key="delete",
+                icon=ft.Icons.DELETE,
+                on_click=self.accept_changes
+            )
+        form_header.controls = [save_button, delete_button]
+        controls.insert(0,form_header)
 
         # RENDERIZA DINAMICO 1:N SOBRE UN CONTENEDOR CON SCROLLIN.
         # AUN EN CONSTRUCCIÓN
