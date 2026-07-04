@@ -1,7 +1,7 @@
 # Modulos Python
 import datetime
 import uuid
-from typing import List
+from typing import List, Optional
 
 # Modulos Terceros
 import flet as ft
@@ -41,7 +41,7 @@ class DatatableORM(ft.Column):
 
     """
 
-    def __init__(self, model: PanCakesORM, controllers: List = None):
+    def __init__(self, model: PanCakesORM, controllers: List = []):
         super().__init__()
         self.model = model
         self.controllers = controllers
@@ -57,7 +57,7 @@ class DatatableORM(ft.Column):
         self.rows = []
         self.flet_rows = []
         self.length = 0
-        self.counter = 1
+        self.counter: Optional[ft.Text | None] = None
         # Almacena los campos widgets de vista formulario 'invocada'
         self.form_controls = []
         self.alert = ft.AlertDialog()
@@ -105,25 +105,27 @@ class DatatableORM(ft.Column):
     def _construct_flet_columns_(self) -> None:
         """Extracción de columnas; Lista de columnas Flet"""
         self.columns = []
-        for column, metadata in self.container[self.table].items():
-            validate = ((column != "@main_table@"), (column != "@depends@"))
-            if all(validate):
-                self.columns.append(column)
+        if self.container is not None:
+            for column, metadata in self.container[self.table].items():
+                validate = ((column != "@main_table@"), (column != "@depends@"))
+                if all(validate):
+                    self.columns.append(column)
 
-        self.flet_columns = [
-            ft.DataColumn(
-                label=ft.Text(str(self.container[self.table][COL]["label"]))
-            )
-            for COL in self.columns
-        ]
+            self.flet_columns = [
+                ft.DataColumn(
+                    label=ft.Text(str(self.container[self.table][COL]["label"]))
+                )
+                for COL in self.columns
+            ]
 
     def _construct_flet_rows_(self) -> None:
         """Extraer y construir las filas del query devuelto actual"""
         raw = []  # Extraccion
-        for field, metadata in self.container[self.table].items():
-            validate = ((field != "@main_table@"), (field != "@depends@"))
-            if all(validate):
-                raw.append(metadata["vector"])
+        if self.container is not None:
+            for field, metadata in self.container[self.table].items():
+                validate = ((field != "@main_table@"), (field != "@depends@"))
+                if all(validate):
+                    raw.append(metadata["vector"])
 
         # Filas crudas transpuestas
         self.rows = list(zip(*raw))
@@ -157,21 +159,22 @@ class DatatableORM(ft.Column):
         # Item seleccionado:
         selection = e.control.data
         # Se asigna el item como valor de la busqueda.
-        self.search_bar.value = selection
-        # Columna nombre del modelo actual.
-        name_field = self.model._metadata[self.table]["columns"][1]
-        # Dominio del query:
-        domain = {f"{self.table}__{name_field}__like": selection}
-        self.name_domain = domain
-        # Se extrae la información:
-        self._fetch_data_()
-        self._construct_flet_rows_()
-        self.datatable.rows = self.flet_rows
-        await self.search_bar.close_view()
-        self.update()
+        if self.search_bar is not None:
+            self.search_bar.value = selection
+            # Columna nombre del modelo actual.
+            name_field = self.model._metadata[self.table]["columns"][1]
+            # Dominio del query:
+            domain = {f"{self.table}__{name_field}__like": selection}
+            self.name_domain = domain
+            # Se extrae la información:
+            self._fetch_data_()
+            self._construct_flet_rows_()
+            self.datatable.rows = self.flet_rows
+            await self.search_bar.close_view()
+            self.update()
 
     def _build_search_bar_tiles_(self, items):
-        return [
+        bar_tiles: list[ft.Control] = [
             ft.ListTile(
                 title=ft.Text(item),
                 data=item,
@@ -179,17 +182,20 @@ class DatatableORM(ft.Column):
             )
             for item in items
         ]
+        return bar_tiles
 
     def handle_search_bar_change(self, e) -> None:
         pattern = e.control.value
         options = self._word_pattern_search_(pattern=pattern)
         if options:
-            self.search_bar.controls = self._build_search_bar_tiles_(
-                items=options
-            )
+            if self.search_bar is not None:
+                self.search_bar.controls = self._build_search_bar_tiles_(
+                    items=options
+                )
 
     async def _handle_search_bar_tap_(self, e) -> None:
-        await self.search_bar.open_view()
+        if self.search_bar is not None:
+            await self.search_bar.open_view()
 
     def _search_bar_widget_(self):
         self.search_bar = ft.SearchBar(
@@ -203,7 +209,7 @@ class DatatableORM(ft.Column):
         """Contiene el contador de paagina"""
 
         # Contador Numerico
-        self.counter = ft.Text(value=self.current_page)
+        self.counter = ft.Text(value=str(self.current_page))
         # Conjunto de componentes (boton, numero, boton)
         self.top_container = ft.Container(
             content=ft.Row(
@@ -219,6 +225,7 @@ class DatatableORM(ft.Column):
         )
         # Se monta la barra de busqueda en el header.
         if self.search_bar is not None:
+            assert isinstance(self.top_container.content, ft.Row)
             self.top_container.content.controls.append(self.search_bar)
 
     def _create_entry_widget_(self) -> None:
@@ -295,7 +302,8 @@ class DatatableORM(ft.Column):
                 self._fetch_data_()
                 self._construct_flet_rows_()
                 self.datatable.rows = self.flet_rows
-                self.counter.value = self.current_page
+                if self.counter is not None:
+                    self.counter.value = str(self.current_page)
                 self.update()
         if e.control.content == "+":
             self.current_page_cache = self.current_page
@@ -308,14 +316,16 @@ class DatatableORM(ft.Column):
             # Esta validación es delicada; Si el row no es un None -> Continuar.
             if self.length >= 1 and self.rows[0][0] is not None:
                 self.datatable.rows = self.flet_rows
-                self.counter.value = self.current_page
+                if self.counter is not None:
+                    self.counter.value = str(self.current_page)
                 self.update()
             else:
                 self.current_page = self.current_page_cache
                 self.container = self.container_cache
                 self._construct_flet_rows_()
                 self.datatable.rows = self.flet_rows
-                self.counter.value = self.current_page
+                if self.counter is not None:
+                    self.counter.value = str(self.current_page)
                 self.update()
 
     def create_entry(self, e):
@@ -509,7 +519,7 @@ class DatatableORM(ft.Column):
     def uncharted_field(self) -> None:
         """Levanta error si algun widget flet no es procesado"""
         self.alert.title = "Tipo de dato invalido"
-        self.alert.content = (
+        self.alert.content = ft.Text(
             "Instancia de Flet no procesada. "
             "Posible error al invocar el metodo 'save_changes'"
         )
@@ -521,7 +531,7 @@ class DatatableORM(ft.Column):
         """Alerta por si en algun momento los widgets de TIMESTAMP
         no se procesan como diccionario de datos."""
         self.alert.title = "Error Procesos 'TIMESTAMP'"
-        self.alert.content = (
+        self.alert.content = ft.Text(
             "Al intentar organizar el input en widgets "
             "TIMESTAMP. No se completo la indexacion de diccionarios."
             f"Widget {widget}"
@@ -553,152 +563,72 @@ class DatatableORM(ft.Column):
             UPDATE = True if update_data[self.columns[0]] else False
 
         # Titulo 'Vista Formulario'
-        controls = [TITLE]
+        controls: List[ft.Control] = [TITLE]
 
         # Limpia widget formularios antiguos
         self.form_controls = []
 
         # Iteracion de 'nombre columnas' crudas
         for COL in self.columns:
-            # Extraccion de metadata y restricciones
-            field_type = self.container[TABLE][COL].get("sql_type", "").upper()
-            field_read_only = self.container[TABLE][COL].get("readonly", False)
-            field_required = self.container[TABLE][COL].get("required", False)
-            sec_table = self.container[TABLE][COL].get("second_table", False)
-            field_position = self.container[TABLE][COL].get("position", "")
-            field_name = self.container[TABLE][COL].get("label", "")
-            default = self.container[TABLE][COL].get("default", None)
-
-            # Si existe N:1 -> Definimos un nombre de columna para el query
-            if sec_table:
-                name = (
-                    f"{sec_table}__{MODEL._metadata[sec_table]['columns'][1]}"
+            # Asegurarse de que container sea distinto de None.
+            if self.container is not None:
+                # Extraccion de metadata y restricciones
+                field_type = (
+                    self.container[TABLE][COL].get("sql_type", "").upper()
                 )
-            else:
-                name = None
-
-            # Required puede ser usado para validar. Aunque pydantic ya lo hace.
-            required = "TRUE" if field_required else "FALSE"
-
-            if update_data is not None:
-                field_default = update_data.get(COL, default)
-
-            else:
-                field_default = self.container[TABLE][COL].get("default", None)
-
-            # Extraccion de restricciones unicas de campo
-            constraints = MODEL._metadata[TABLE]["schema"][COL]["constraints"]
-            max_length = constraints.get("max_length", None)
-            ge = constraints.get("ge", False)
-            gt = constraints.get("gt", False)
-            le = constraints.get("le", False)
-            lt = constraints.get("lt", False)
-
-            # Position es una llave unica que almacena metadata 'procesamiento'.
-            COL_LABEL = MODEL._metadata[TABLE]["columns"][field_position]
-            position = (
-                f"{TABLE}__"  # Nombre de Tabla
-                f"{COL_LABEL}__"  # Columna "en crudo"
-                f"{str(field_position)}__"  # Posicion en la tabla
-                f"{required}__"  # Si es campo requerido
-                f"{str(uuid.uuid4())}"  # Codigo unico
-            )
-
-            # Se renderizan todos los widgets (segun el campo pasado)
-            if field_type == "TEXT":
-                component = ft.TextField(
-                    label=field_name,
-                    key=position,
-                    disabled=field_read_only,
-                    value=field_default,
+                field_read_only = self.container[TABLE][COL].get(
+                    "readonly", False
                 )
-                self.form_controls.append(component)
-
-            elif field_type == "VARCHAR":
-                component = ft.TextField(
-                    label=field_name,
-                    key=position,
-                    disabled=field_read_only,
-                    max_length=max_length,
-                    value=field_default,
+                field_required = self.container[TABLE][COL].get(
+                    "required", False
                 )
-                self.form_controls.append(component)
-
-            elif field_type == "INTEGER":
-                component = ft.TextField(
-                    label=field_name,
-                    input_filter=ft.InputFilter(
-                        allow=True,
-                        regex_string=r"^[0-9]*$",
-                        replacement_string="",
-                    ),
-                    keyboard_type=ft.KeyboardType.NUMBER,
-                    key=position,
-                    disabled=field_read_only,
-                    value=field_default,
+                sec_table = self.container[TABLE][COL].get(
+                    "second_table", False
                 )
-                self.form_controls.append(component)
+                field_position = self.container[TABLE][COL].get("position", "")
+                field_name = self.container[TABLE][COL].get("label", "")
+                default = self.container[TABLE][COL].get("default", None)
 
-            elif field_type == "FLOAT":
-                component = ft.TextField(
-                    label=field_name,
-                    input_filter=ft.InputFilter(
-                        allow=True,
-                        regex_string=r"^\d*\.?\d*$",
-                        replacement_string="",
-                    ),
-                    keyboard_type=ft.KeyboardType.NUMBER,
-                    key=position,
-                    disabled=field_read_only,
-                    value=field_default,
-                )
-                self.form_controls.append(component)
+                # Si existe N:1 -> Definimos un nombre de columna para el query
+                if sec_table:
+                    exp = "columns"
+                    name = f"{sec_table}__{MODEL._metadata[sec_table][exp][1]}"
+                else:
+                    name = None
 
-            elif field_type == "BOOLEAN":
-                VAL = field_default if field_default is not None else True
-                component = ft.Switch(
-                    label=field_name,
-                    key=position,
-                    disabled=field_read_only,
-                    value=VAL,
-                )
-                self.form_controls.append(component)
+                # Required puede ser usado para validar. Pydantic lo hace igual.
+                required = "TRUE" if field_required else "FALSE"
 
-            elif field_type == "DATE":
-                validate = (
-                    (field_default is not None),
-                    (not isinstance(field_default, datetime.date)),
-                )
-                if all(validate):
-                    FORMAT = "%Y-%m-%d"
-                    field_default = datetime.datetime.strptime(
-                        field_default, FORMAT
-                    )
-
-                if field_read_only:
-                    component = ft.TextField(
-                        label=field_name,
-                        key=position,
-                        read_only=field_read_only,
-                        value=field_default,
-                    )
+                if update_data is not None:
+                    field_default = update_data.get(COL, default)
 
                 else:
-                    picker = ft.DatePicker(value=field_default)
-                    component = ft.Button(
-                        content=f"{field_name}",
-                        key=position,
-                        disabled=field_read_only,
-                        on_click=lambda e: self.page.show_dialog(picker),
-                        icon=ft.Icons.CALENDAR_MONTH,
-                        data=picker,
+                    field_default = self.container[TABLE][COL].get(
+                        "default", None
                     )
 
-                self.form_controls.append(component)
+                # Extraccion de restricciones unicas de campo
+                constraints = MODEL._metadata[TABLE]["schema"][COL][
+                    "constraints"
+                ]
+                max_length = constraints.get("max_length", None)
+                ge = constraints.get("ge", False)
+                gt = constraints.get("gt", False)
+                le = constraints.get("le", False)
+                lt = constraints.get("lt", False)
 
-            elif field_type == "TIMESTAMP":
-                if field_read_only or default:
-                    field_read_only = True
+                # Position: llave unica que almacena metadata 'procesamiento'.
+                COL_LABEL = MODEL._metadata[TABLE]["columns"][field_position]
+                position = (
+                    f"{TABLE}__"  # Nombre de Tabla
+                    f"{COL_LABEL}__"  # Columna "en crudo"
+                    f"{str(field_position)}__"  # Posicion en la tabla
+                    f"{required}__"  # Si es campo requerido
+                    f"{str(uuid.uuid4())}"  # Codigo unico
+                )
+
+                # Se renderizan todos los widgets (segun el campo pasado)
+                if field_type == "TEXT":
                     component = ft.TextField(
                         label=field_name,
                         key=position,
@@ -707,72 +637,171 @@ class DatatableORM(ft.Column):
                     )
                     self.form_controls.append(component)
 
-                else:
-                    date_picker = ft.DatePicker(value=None)
-                    time_picker = ft.TimePicker(value=None)
-                    date_component = ft.Button(
-                        content=f"{field_name}",
-                        key=f"DATE__{position}",
+                elif field_type == "VARCHAR":
+                    component = ft.TextField(
+                        label=field_name,
+                        key=position,
                         disabled=field_read_only,
-                        on_click=lambda e: self.page.show_dialog(date_picker),
-                        icon=ft.Icons.CALENDAR_MONTH,
-                        data=date_picker,
+                        max_length=max_length,
+                        value=field_default,
                     )
-                    time_component = ft.Button(
-                        content=f"{field_name}",
-                        key=f"TIME__{position}",
+                    self.form_controls.append(component)
+
+                elif field_type == "INTEGER":
+                    component = ft.TextField(
+                        label=field_name,
+                        input_filter=ft.InputFilter(
+                            allow=True,
+                            regex_string=r"^[0-9]*$",
+                            replacement_string="",
+                        ),
+                        keyboard_type=ft.KeyboardType.NUMBER,
+                        key=position,
                         disabled=field_read_only,
-                        on_click=lambda e: self.page.show_dialog(time_picker),
-                        icon=ft.Icons.TIMER,
-                        data=time_picker,
+                        value=field_default,
                     )
+                    self.form_controls.append(component)
 
-                    self.form_controls.append(date_component)
-                    self.form_controls.append(time_component)
+                elif field_type == "FLOAT":
+                    component = ft.TextField(
+                        label=field_name,
+                        input_filter=ft.InputFilter(
+                            allow=True,
+                            regex_string=r"^\d*\.?\d*$",
+                            replacement_string="",
+                        ),
+                        keyboard_type=ft.KeyboardType.NUMBER,
+                        key=position,
+                        disabled=field_read_only,
+                        value=field_default,
+                    )
+                    self.form_controls.append(component)
 
-            elif field_type == "FOREIGN KEY":
-                sub_model = MODEL._family[sec_table]
-                sub_table = sub_model._table
-                ROW, COL = sub_model.select(name).all().raw(align=True)
+                elif field_type == "BOOLEAN":
+                    VAL = field_default if field_default is not None else True
+                    component = ft.Switch(
+                        label=field_name,
+                        key=position,
+                        disabled=field_read_only,
+                        value=VAL,
+                    )
+                    self.form_controls.append(component)
 
-                selection = None
-                if ROW:
-                    OPTIONS = list(ROW[0])
-                    if field_default:
-                        domain = {
-                            f"{sub_table}__{sub_table}_id__same": int(
-                                field_default
-                            )
-                        }
-                        element = (
-                            sub_model.select(name)
-                            .filter(**domain)
-                            .all()
-                            .raw(align=True)
+                elif field_type == "DATE":
+                    validate = (
+                        (field_default is not None),
+                        (not isinstance(field_default, datetime.date)),
+                    )
+                    if all(validate):
+                        FORMAT = "%Y-%m-%d"
+                        field_default = datetime.datetime.strptime(
+                            field_default, FORMAT
                         )
-                        search = element[0][0] if element else None
-                        try:
-                            indice = OPTIONS.index(*search)
-                            selection = OPTIONS[indice]
-                        except IndexError:
-                            selection = None
+
+                    if field_read_only:
+                        component = ft.TextField(
+                            label=field_name,
+                            key=position,
+                            read_only=field_read_only,
+                            value=str(field_default),
+                        )
+
+                    else:
+                        picker = ft.DatePicker(value=field_default)
+                        component = ft.Button(
+                            content=f"{field_name}",
+                            key=position,
+                            disabled=field_read_only,
+                            on_click=lambda e: self.page.show_dialog(picker),
+                            icon=ft.Icons.CALENDAR_MONTH,
+                            data=picker,
+                        )
+
+                    self.form_controls.append(component)
+
+                elif field_type == "TIMESTAMP":
+                    if field_read_only or default:
+                        field_read_only = True
+                        component = ft.TextField(
+                            label=field_name,
+                            key=position,
+                            disabled=field_read_only,
+                            value=field_default,
+                        )
+                        self.form_controls.append(component)
+
+                    else:
+                        date_picker = ft.DatePicker(value=None)
+                        time_picker = ft.TimePicker(value=None)
+                        date_component = ft.Button(
+                            content=f"{field_name}",
+                            key=f"DATE__{position}",
+                            disabled=field_read_only,
+                            on_click=lambda e: self.page.show_dialog(
+                                date_picker
+                            ),
+                            icon=ft.Icons.CALENDAR_MONTH,
+                            data=date_picker,
+                        )
+                        time_component = ft.Button(
+                            content=f"{field_name}",
+                            key=f"TIME__{position}",
+                            disabled=field_read_only,
+                            on_click=lambda e: self.page.show_dialog(
+                                time_picker
+                            ),
+                            icon=ft.Icons.TIMER,
+                            data=time_picker,
+                        )
+
+                        self.form_controls.append(date_component)
+                        self.form_controls.append(time_component)
+
+                elif field_type == "FOREIGN KEY":
+                    sub_model = MODEL._family[sec_table]
+                    sub_table = sub_model._table
+                    ROW, COL = sub_model.select(name).all().raw(align=True)
+
+                    selection = None
+                    if ROW:
+                        OPTIONS = list(ROW[0])
+                        if field_default:
+                            domain = {
+                                f"{sub_table}__{sub_table}_id__same": int(
+                                    field_default
+                                )
+                            }
+                            element = (
+                                sub_model.select(name)
+                                .filter(**domain)
+                                .all()
+                                .raw(align=True)
+                            )
+                            search_var = element[0][0] if element else None
+                            if search_var is not None:
+                                try:
+                                    indice = OPTIONS.index(*search_var)
+                                    selection = OPTIONS[indice]
+                                except IndexError:
+                                    selection = None
+
+                    else:
+                        OPTIONS = []
+
+                    component = ft.Dropdown(
+                        label=field_name,
+                        key=position,
+                        value=selection,
+                        options=[
+                            ft.DropdownOption(key=str(op), text=str(op))
+                            for op in OPTIONS
+                        ],
+                    )
+
+                    self.form_controls.append(component)
+
                 else:
-                    OPTIONS = []
-
-                component = ft.Dropdown(
-                    label=field_name,
-                    key=position,
-                    value=selection,
-                    options=[
-                        ft.DropdownOption(key=str(op), text=str(op))
-                        for op in OPTIONS
-                    ],
-                )
-
-                self.form_controls.append(component)
-
-            else:
-                raise TypeError(f"Unknown passed datatype {field_type}.")
+                    raise TypeError(f"Unknown passed datatype {field_type}.")
 
         # Controles formulario de campo, fusion con controles estaticos.
         controls.extend(self.form_controls)
