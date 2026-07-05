@@ -96,6 +96,7 @@ class DatatableORM(ft.Column):
 
         # Metodos
         self._operators_widget_()
+        self._datatype_selector_widget_()
         self._calculate_chunk_()
         self._fetch_data_()
         self._construct_flet_columns_()
@@ -113,6 +114,7 @@ class DatatableORM(ft.Column):
     def _operators_widget_(self):
         self.domain_select_operator = ft.Dropdown(
             menu_height=300,
+            width=1000,
             value=self.OPERATORS["same"],
             options=[
                 ft.DropdownOption(
@@ -123,6 +125,53 @@ class DatatableORM(ft.Column):
                 for exp, mean in self.OPERATORS.items()
             ]
         )
+
+    def _datatype_selector_widget_(self):
+        """
+        Tipos validos:
+        1. Singular
+        2. Iterable
+        3. Couple
+        El separador de iterables debe ser la coma ','.
+        """
+        self.domain_datatype_selector = ft.ExpansionPanelList(
+            expand=True,
+            scroll=ft.ScrollMode.ALWAYS,
+            spacing=8,
+        )
+        self.SINGULAR = ft.ExpansionPanel(
+            can_tap_header=True,
+            header=ft.ListTile(title=ft.Text("Solo un valor.")),
+            content=ft.TextField(value=None)
+        )
+        self.ITERABLES = ft.ExpansionPanel(
+            can_tap_header=True,
+            header=ft.ListTile(title=ft.Text("Lista de valores.")),
+            content=ft.TextField(value=None)
+        )
+        self.RANGE = ft.ExpansionPanel(
+            can_tap_header=True,
+            header=ft.ListTile(title=ft.Text("Rango de 2 valores.")),
+            content=ft.TextField(value=None)
+        )
+
+        # Asignacion al componente desplegable de lista
+        self.domain_datatype_selector.controls.append(self.SINGULAR)
+        self.domain_datatype_selector.controls.append(self.ITERABLES)
+        self.domain_datatype_selector.controls.append(self.RANGE)
+        
+        # Se coloca en una columna de flet
+        self.datatype_selector_column = ft.Column(
+            controls=[self.domain_datatype_selector],
+        )
+
+        # Se coloca en un contenedor flet.
+        self.domain_datatype_container = ft.Container(
+            border_radius=10,
+            content=self.datatype_selector_column,
+            expand=True,
+        )
+        
 
     def _calculate_chunk_(self) -> None:
         """Tranforma indices 0,1,2 en rangos 20,40,60 etc..."""
@@ -156,12 +205,15 @@ class DatatableORM(ft.Column):
 
             self.flet_columns = [
                 ft.DataColumn(
-                    label=ft.Text(str(self.container[self.table][COL]["label"]))
+                    label=ft.Text(
+                        str(self.container[self.table][COL]["label"])
+                    )
                 )
                 for COL in self.columns
             ]
         if self.columns:
             self.domain_select_column = ft.Dropdown(
+                width=1000,
                 menu_height=300,
                 value=self.columns[0],
                 options=[
@@ -611,14 +663,68 @@ class DatatableORM(ft.Column):
         self.alert = ft.AlertDialog()
         self.alert.title = ft.Text(value="Dominio Avanzado")
         msg = (
-            "Especifique el campo, el operador de comparación y un valor "
-            "para poder realizar la consulta de datos."
+            "1. Especifique el campo por el cual desea hacer el filtro. "
+            "2. Seleccione un operado de comparacion. "
+            "3. Agregue el 'dato' o 'datos' de referencia en los deplegables. "
+            "Importante: El operador y el operador aplican estrictamente a "
+            "situaciones distintas. Ej. 'name', '=', 'Omar'. "
         )
-        self.alert.content = ft.Text(msg)
-        if self.domain_select_column is not None:
-            self.alert.actions.append(self.domain_select_column)
-        if self.domain_select_operator is not None:
-            self.alert.actions.append(self.domain_select_operator)
+        self.alert.content = ft.Text(
+            value=msg,
+            italic=True
+        )
+        validate = (
+            (self.domain_select_column is not None),
+            (self.domain_select_operator is not None)
+        )
+        if all(validate):
+            # Se agrega un espaciado entre los controles del pop-up!
+            self.alert.actions_overflow_button_spacing = 10
+
+            # Se crea y agrega un contenedor para la seleccion de campos y operadores.
+            self.domain_fields_operators_container = ft.Container(
+                expand=True,
+                content=ft.Row(
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    controls=[
+                        ft.Container(
+                            expand=True,
+                            content=self.domain_select_column,
+                        ),
+                        ft.Container(
+                            expand=True,
+                            content=self.domain_select_operator,
+                        ),
+                    ]
+                )
+            )
+            self.alert.actions.insert(0, self.domain_fields_operators_container)
+
+            # Se agrega el contenedor de desplegables (Tipos de datos)
+            self.alert.actions.append(self.domain_datatype_container)
+
+            # Se agregan los botones de accion para "Dominios Avanzados"
+            self.domain_buttons_container = ft.Container(
+                expand=True,
+                content=ft.Row(
+                    controls=[
+                        ft.Button(
+                            content=ft.Text(value="Aplicar Dominio"),
+                            on_click=None,
+                            icon=ft.Icons.MANAGE_SEARCH,
+                        ),
+                        ft.Button(
+                            content=ft.Text(value="Salir"),
+                            on_click=lambda self: self.page.pop_dialog(),
+                            icon=ft.Icons.UNDO,
+                        )
+                    ],
+                    alignment=ft.MainAxisAlignment.END,
+                    tight=True
+                )
+            )
+            self.alert.actions.append(self.domain_buttons_container)
+
         self.page.show_dialog(self.alert)
 
     def accept_changes(self, e):
@@ -674,14 +780,22 @@ class DatatableORM(ft.Column):
         self.page.show_dialog(self.alert)
 
     def impossible_delete(self):
-        self.alert.title = ft.Text(value="Imposible Eliminar")
-        msg = (
-            "El registro no se pudo eliminar "
-            "No se encontro un indice numerico por el cual filtrar. "
-            "Algún otro error como restriccion SQL puede ser el culpable."
-            "Revisar función 'delete_entry'."
+        self.alert = ft.AlertDialog()
+        self.alert.title = ft.Text(
+            value="¡Imposible de completar!",
+            color=ft.Colors.RED_600
         )
-        self.alert.content = ft.Text(msg)
+        msg = (
+            "El registro no se pudo eliminar. "
+            "No se encontró un indice númerico por el cual filtrar. "
+            "Posible causa: Ejecutar esta acción sobre registros vacios. "
+            "Algún otro error como restricción a nivel SQL puede ser el culpable. "
+            "Se recomienda revisar función 'delete_entry'."
+        )
+        self.alert.content = ft.Text(
+            msg,
+            italic=True
+        )
         self.alert.actions = [
             ft.Button(
                 content=ft.Text("Cerrar"),
@@ -689,7 +803,7 @@ class DatatableORM(ft.Column):
             )
         ]
         self.alert.open = True
-        self.page.show_dialog()
+        self.page.show_dialog(self.alert)
 
     # === FORMULARIO ===
 

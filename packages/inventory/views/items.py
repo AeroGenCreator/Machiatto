@@ -1,4 +1,4 @@
-from machiatto.dataclasses import NavigationBarItem
+from machiatto.machiatto_dataclasses import NavigationBarItem
 
 from ..backend.expose_models import get_categories, get_inventory
 
