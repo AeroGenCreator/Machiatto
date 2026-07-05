@@ -35,19 +35,28 @@ class DatatableORM(ft.Column):
     rows; Filas transpuestas crudas.
     flet_rows; Filas del query (listadas como objetos Flet).
     length; Largo del vector devuelto por el query actual.
-    counter;
+    counter; Widget - Muestra el numero de pagina actual.
     form_controls;
     alert;
 
     """
 
-    def __init__(self, model: PanCakesORM, controllers: List = []):
+    def __init__(
+        self,
+        model: PanCakesORM,
+        controllers: List = [],
+    ):
         super().__init__()
         self.model = model
         self.controllers = controllers
         self.search_bar = None
-        self.name_domain = None
+        self.custom_domain = ft.Button(
+            content=ft.Text("Dominios"),
+            key="custom_domain",
+            icon=ft.Icons.FILTER_LIST
+        )
 
+        self.name_domain = None
         self.current_page = 1
         self.max_rows = 15
         self.container = None
@@ -64,8 +73,29 @@ class DatatableORM(ft.Column):
         self.close_alert = ft.TextButton(
             "Cerrar", on_click=lambda e: self.page.pop_dialog()
         )
+        self.domain_select_column: Optional[None | ft.Dropdown] = None
+        self.model_labels = self.model._metadata[self.table]["comments"]
+        self.domain_select_operator: Optional[None | ft.Dropdown] = None
+
+        # Operadores Conversiones
+        self.OPERATORS = {
+            "same": "=",
+            "lt": "<",
+            "ltsm": "<=",
+            "gt": ">",
+            "gtsm": ">=",
+            "diff": "<>",
+            "in": "IN",
+            "notin": "NOT IN",
+            "btwn": "BETWEEN",
+            "is": "IS",
+            "isnot": "IS NOT",
+            "like": "LIKE",
+            "notlike": "NOT LIKE",
+        }
 
         # Metodos
+        self._operators_widget_()
         self._calculate_chunk_()
         self._fetch_data_()
         self._construct_flet_columns_()
@@ -80,6 +110,19 @@ class DatatableORM(ft.Column):
         self._layout_()
 
     # === Metodos inicializacion ===
+    def _operators_widget_(self):
+        self.domain_select_operator = ft.Dropdown(
+            menu_height=300,
+            value=self.OPERATORS["same"],
+            options=[
+                ft.DropdownOption(
+                    key=exp,
+                    text=mean,
+                    trailing_icon=ft.Icons.COMPARE_ARROWS,
+                )
+                for exp, mean in self.OPERATORS.items()
+            ]
+        )
 
     def _calculate_chunk_(self) -> None:
         """Tranforma indices 0,1,2 en rangos 20,40,60 etc..."""
@@ -117,6 +160,19 @@ class DatatableORM(ft.Column):
                 )
                 for COL in self.columns
             ]
+        if self.columns:
+            self.domain_select_column = ft.Dropdown(
+                menu_height=300,
+                value=self.columns[0],
+                options=[
+                    ft.DropdownOption(
+                        key=col,
+                        text=self.model_labels[i],
+                        trailing_icon=ft.Icons.VIEW_COLUMN
+                    )
+                    for i, col in enumerate(self.columns)
+                ]
+            )
 
     def _construct_flet_rows_(self) -> None:
         """Extraer y construir las filas del query devuelto actual"""
@@ -174,6 +230,12 @@ class DatatableORM(ft.Column):
             self.update()
 
     def _build_search_bar_tiles_(self, items):
+        """
+        Construye las opciones a mostrar en la searchbar:
+        Esta construcción esta optimizada porque solo construye segun el query
+        de opciones que se ajustan al patron de busqueda.
+        """
+        # Se ocupan ft.ListTile() para rellena la lista
         bar_tiles: list[ft.Control] = [
             ft.ListTile(
                 title=ft.Text(item),
@@ -185,6 +247,7 @@ class DatatableORM(ft.Column):
         return bar_tiles
 
     def handle_search_bar_change(self, e) -> None:
+        """Se dispara cuando se escribe sobre la searchbar"""
         pattern = e.control.value
         options = self._word_pattern_search_(pattern=pattern)
         if options:
@@ -194,19 +257,28 @@ class DatatableORM(ft.Column):
                 )
 
     async def _handle_search_bar_tap_(self, e) -> None:
+        """Se dispara cuando se hace click en la searchbar"""
         if self.search_bar is not None:
             await self.search_bar.open_view()
 
     def _search_bar_widget_(self):
+        """Construcción del widget 'searchbar'."""
         self.search_bar = ft.SearchBar(
-            bar_hint_text="Filter by record name...",
-            view_hint_text="Type a record name...",
+            bar_hint_text="Filtrar por nombre...",
+            view_hint_text="Escribir nombre de registro...",
             on_change=self.handle_search_bar_change,
             on_tap=self._handle_search_bar_tap_,
         )
 
     def _header_container_widget_(self) -> None:
-        """Contiene el contador de paagina"""
+        """
+        Monta los widgets alojados en el contenedor de la primera fila
+        de contenidos:
+        Esta fila representa la barra de opciones.
+        1. Contador de pagina
+        2. Filtro por nombre
+        3. Filtro avanzado
+        """
 
         # Contador Numerico
         self.counter = ft.Text(value=str(self.current_page))
@@ -223,10 +295,14 @@ class DatatableORM(ft.Column):
             border_radius=5,
             expand=10,
         )
-        # Se monta la barra de busqueda en el header.
+
+        # Se asigna la funcion para dominio avanzado.
+        self.custom_domain.on_click = self.domain_dialog
+        # Se monta la barra de busqueda y el dominio avanzado.
         if self.search_bar is not None:
             assert isinstance(self.top_container.content, ft.Row)
             self.top_container.content.controls.append(self.search_bar)
+            self.top_container.content.controls.append(self.custom_domain)
 
     def _create_entry_widget_(self) -> None:
         """Boton de nuevo registro, genera instancia de formulario vacio"""
@@ -531,7 +607,21 @@ class DatatableORM(ft.Column):
             self.impossible_delete()
         self.update()
 
-    def accept_changes(self):
+    def domain_dialog(self, e):
+        self.alert = ft.AlertDialog()
+        self.alert.title = ft.Text(value="Dominio Avanzado")
+        msg = (
+            "Especifique el campo, el operador de comparación y un valor "
+            "para poder realizar la consulta de datos."
+        )
+        self.alert.content = ft.Text(msg)
+        if self.domain_select_column is not None:
+            self.alert.actions.append(self.domain_select_column)
+        if self.domain_select_operator is not None:
+            self.alert.actions.append(self.domain_select_operator)
+        self.page.show_dialog(self.alert)
+
+    def accept_changes(self, e):
         self.alert.title = ft.Text(value="Acción Peligrosa")
         msg = (
             "Estas por eliminar un registro de manera permanente "
@@ -540,7 +630,9 @@ class DatatableORM(ft.Column):
         )
         accept = ft.Button(
             content=ft.Text("Aceptar"),
-            on_click=self.delete_entry
+            on_click=self.delete_entry,
+            bgcolor=ft.Colors.RED_600,
+            color=ft.Colors.WHITE,
         )
         self.alert.content = ft.Text(value=msg)
         self.alert.actions = [accept]
