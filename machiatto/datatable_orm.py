@@ -77,7 +77,7 @@ class DatatableORM(ft.Column):
         self.model_labels = self.model._metadata[self.table]["comments"]
         self.domain_select_operator: Optional[None | ft.Dropdown] = None
 
-        # Operadores Conversiones
+        # Operadores Conversiones y Conjuntos de validacion segun categoria.
         self.OPERATORS = {
             "same": "=",
             "lt": "<",
@@ -93,6 +93,32 @@ class DatatableORM(ft.Column):
             "like": "LIKE",
             "notlike": "NOT LIKE",
         }
+
+        self.SG_OPERATORS = {
+            "same",
+            "lt",
+            "ltsm",
+            "gt",
+            "gtsm",
+            "diff",
+            "is",
+            "isnot",
+            "like",
+            "notlike"
+        }
+
+        self.ITER_OPERATORS = {
+            "in",
+            "notin"
+        }
+
+        self.RANGE_OPERATORS = {
+            "btwn"
+        }
+
+        self.FLOAT_EXP = r''
+
+        self.INT_EXP = r''
 
         # Metodos
         self._operators_widget_()
@@ -153,7 +179,7 @@ class DatatableORM(ft.Column):
 
         # === SINGULAR ===
         # Input singular | Construcción del widget
-        self.singulap_input = ft.TextField(value=None)
+        self.singular_input = ft.TextField(value="")
         self.SINGULAR = ft.ExpansionPanel(
             can_tap_header=True,
             header=ft.ListTile(title=ft.Text("Solo un valor.")),
@@ -162,7 +188,7 @@ class DatatableORM(ft.Column):
                 padding=10,
                 content=ft.Row(
                     alignment=ft.MainAxisAlignment.START,
-                    controls=[self.singulap_input]
+                    controls=[self.singular_input]
                 ),
             )
         )
@@ -176,7 +202,8 @@ class DatatableORM(ft.Column):
             content=ft.Row(
                 wrap=True,
                 spacing=8,
-                run_spacing=8
+                run_spacing=8,
+                controls=[]
             )
         )
 
@@ -213,8 +240,8 @@ class DatatableORM(ft.Column):
         )
 
         # === RANGOS ===
-        self.first_range = ft.TextField(value=None)
-        self.second_range = ft.TextField(value=None)
+        self.first_range = ft.TextField(value="")
+        self.second_range = ft.TextField(value="")
         self.RANGE = ft.ExpansionPanel(
             can_tap_header=True,
             header=ft.ListTile(title=ft.Text("Rango de 2 valores.")),
@@ -789,7 +816,7 @@ class DatatableORM(ft.Column):
                     controls=[
                         ft.Button(
                             content=ft.Text(value="Aplicar Dominio"),
-                            on_click=None,
+                            on_click=self.action_advance_domain,
                             icon=ft.Icons.MANAGE_SEARCH,
                         ),
                         ft.Button(
@@ -804,6 +831,76 @@ class DatatableORM(ft.Column):
             )
             self.alert.actions.append(self.domain_buttons_container)
 
+        self.page.show_dialog(self.alert)
+
+    def action_advance_domain(self):
+        """
+        Dispara el evento de dominio avanzado:
+        Evalua coincidencia entre operadores y datos.
+        Limpia y parse los datos.
+        Genea un Kwargs para un query filtrado.
+        Pinta las lineas en la GUI.
+        """
+        validate_field_operator = (
+            (self.domain_select_column.value),
+            (self.domain_select_operator.value)
+        )
+        if all(validate_field_operator):
+            FD = self.domain_select_column.value
+            OP = self.domain_select_operator.value
+            VL = None
+
+            if OP in self.SG_OPERATORS:
+                if self.singular_input.value:
+                    VL = self.singular_input.value
+                else:
+                    self.bad_domain(operator=OP)
+            if OP in self.ITER_OPERATORS:
+                if self.tags_container.content.controls:
+                    VL = []
+                    for v in self.tags_container.content.controls:
+                        VL.append(v.label)
+                else:
+                    self.bad_domain(operator=OP)
+            if OP in self.RANGE_OPERATORS:
+                validate_range = (
+                    (self.first_range.value), (self.second_range.value)
+                )
+                if all(validate_range):
+                    VL = [self.first_range.value, self.second_range.value]
+                else:
+                    self.bad_domain(operator=OP)
+
+            # Conversion de datos segun su coincidencia con patron de caracteres.
+            # import ipdb; ipdb.set_trace()
+            nones = "None"
+            if isinstance(VL, list):
+                pass
+            else:
+                pass
+
+    def bad_domain(self, operator):
+        self.alert = ft.AlertDialog()
+        self.alert.title = ft.Text(
+            color=ft.Colors.RED_600,
+            value="Uso Incorrecto de Operadores"
+        )
+        msg = (
+            "Se esta intentando aplicar dominio avanzado usando un operador "
+            "no compatible con el tipo de dato o "
+            "sin especificar ningun dato en absoluto. OP: "
+            f"{self.OPERATORS[operator]}. "
+            "Para completar su solicitu debe relacionar operadores "
+            "singulares con datos singulares. Ej. 'price', '>', '100'. "
+            "Iterables  con datos lista: Ej. 'price', 'NOT IN', '[30, 40, 50]'. "
+            "Rangos con 2 valores: Ej. 'date', 'BETWEEN', [2026-01-01, 2026-02-01]."
+        )
+        self.alert.actions = ft.Button(
+            content=ft.Text("Cerrar"),
+            on_click=lambda self: self.page.pop_dialog()
+        )
+        self.alert.content = ft.Text(value=msg, size=18, italic=True)
+        self.alert.open = True
         self.page.show_dialog(self.alert)
 
     def accept_changes(self, e):
