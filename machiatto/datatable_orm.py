@@ -1,5 +1,6 @@
 # Modulos Python
 import datetime
+import re
 import uuid
 from typing import List, Optional
 
@@ -116,9 +117,8 @@ class DatatableORM(ft.Column):
             "btwn"
         }
 
-        self.FLOAT_EXP = r''
-
-        self.INT_EXP = r''
+        self.FLOAT_EXPR = r"[0-9]+\.[0-9]+"
+        self.INTEGER_EXPR = r'[0-9]+'
 
         # Metodos
         self._operators_widget_()
@@ -841,6 +841,29 @@ class DatatableORM(ft.Column):
         Genea un Kwargs para un query filtrado.
         Pinta las lineas en la GUI.
         """
+
+        def query_avanzado(valores: list[any] | str = None):
+            if valores is not None:
+                kw = {f"{self.table}__{FD}__{OP}": valores}
+                self.page.pop_dialog()
+                self.current_page = 1
+                if self.counter is not None:
+                    self.counter.value = str(self.current_page)
+                self._calculate_chunk_()
+                self.container = (
+                    self
+                    .model
+                    .filter(**kw)
+                    .chunk(**self.chunk)
+                    .all()
+                    .container()
+                )
+                self._construct_flet_rows_()
+                self._vector_length_()
+                self.datatable.rows = self.flet_rows
+                self.update()
+                return
+
         validate_field_operator = (
             (self.domain_select_column.value),
             (self.domain_select_operator.value)
@@ -848,21 +871,25 @@ class DatatableORM(ft.Column):
         if all(validate_field_operator):
             FD = self.domain_select_column.value
             OP = self.domain_select_operator.value
-            VL = None
+            VL = ""
 
             if OP in self.SG_OPERATORS:
                 if self.singular_input.value:
                     VL = self.singular_input.value
                 else:
                     self.bad_domain(operator=OP)
-            if OP in self.ITER_OPERATORS:
+                    return
+
+            elif OP in self.ITER_OPERATORS:
                 if self.tags_container.content.controls:
                     VL = []
                     for v in self.tags_container.content.controls:
                         VL.append(v.label)
                 else:
                     self.bad_domain(operator=OP)
-            if OP in self.RANGE_OPERATORS:
+                    return
+
+            elif OP in self.RANGE_OPERATORS:
                 validate_range = (
                     (self.first_range.value), (self.second_range.value)
                 )
@@ -870,14 +897,64 @@ class DatatableORM(ft.Column):
                     VL = [self.first_range.value, self.second_range.value]
                 else:
                     self.bad_domain(operator=OP)
-
-            # Conversion de datos segun su coincidencia con patron de caracteres.
-            # import ipdb; ipdb.set_trace()
-            nones = "None"
-            if isinstance(VL, list):
-                pass
+                    return
             else:
-                pass
+                self.bad_domain(operator=OP)
+                return
+
+            # Conversion de datos segun su coincidencia con patron caracteres.
+            # import ipdb; ipdb.set_trace()
+
+            PFL = []  # Parsed float list
+            PIL = []  # Parsed integer list
+
+            if isinstance(VL, list):
+                for item in VL:
+                    result = re.search(self.FLOAT_EXPR, item)
+                    if result:
+                        if result.group() == item:
+                            PFL.append(float(item))
+                    else:
+                        break
+
+                if len(PFL) == len(VL):
+                    query_avanzado(valores=PFL)
+                    return
+
+                for item in VL:
+                    result = re.search(self.INTEGER_EXPR, item)
+                    if result:
+                        if result.group() == item:
+                            PIL.append(int(item))
+                    else:
+                        break
+
+                if len(PIL) == len(VL):
+                    query_avanzado(valores=PIL)
+                    return
+
+                else:
+                    self.bad_domain(operator=OP)
+                    return
+
+            else:
+
+                es_float = re.search(self.FLOAT_EXPR, VL)
+                if es_float:
+                    if es_float.group() == VL:
+                     query_avanzado(valores=float(VL))
+                     return
+
+                es_integer = re.search(self.INTEGER_EXPR, VL)
+                if es_integer:
+                    if es_integer.group() == VL:
+                        query_avanzado(valores=VL)
+                        return
+
+                if OP in {"is", "isnot"} and VL == "":
+                    VL = None
+                query_avanzado(valores=VL)
+                return
 
     def bad_domain(self, operator):
         self.alert = ft.AlertDialog()
@@ -892,8 +969,10 @@ class DatatableORM(ft.Column):
             f"{self.OPERATORS[operator]}. "
             "Para completar su solicitu debe relacionar operadores "
             "singulares con datos singulares. Ej. 'price', '>', '100'. "
-            "Iterables  con datos lista: Ej. 'price', 'NOT IN', '[30, 40, 50]'. "
-            "Rangos con 2 valores: Ej. 'date', 'BETWEEN', [2026-01-01, 2026-02-01]."
+            "Iterables  con datos lista: "
+            "Ej. 'price', 'NOT IN', '[30, 40, 50]'. "
+            "Rangos con 2 valores: "
+            "Ej. 'date', 'BETWEEN', [2026-01-01, 2026-02-01]."
         )
         self.alert.actions = ft.Button(
             content=ft.Text("Cerrar"),
