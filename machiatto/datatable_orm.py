@@ -25,7 +25,7 @@ class DatatableORM(ft.Column):
 
     model; El modelo renderizado, funciones, vistas, ... etc.
     controllers; Lista 'Peticion de componentes'.
-    filters; Lista 'Peticion de filtros'.
+    advanced_domain; Bandera - Tenemos un filtro avanzado activo.
 
     current_page; Ubicacion de Pagina.
     max_rows; Maximo de filas renderizadas por hoja.
@@ -50,6 +50,7 @@ class DatatableORM(ft.Column):
         super().__init__()
         self.model = model
         self.controllers = controllers
+        self.advanced_domain = False
         self.search_bar = None
         self.custom_domain = ft.Button(
             content=ft.Text("Dominios"),
@@ -57,7 +58,7 @@ class DatatableORM(ft.Column):
             icon=ft.Icons.FILTER_LIST
         )
 
-        self.name_domain = None
+        self.name_domain = False
         self.current_page = 1
         self.max_rows = 15
         self.container = None
@@ -121,8 +122,8 @@ class DatatableORM(ft.Column):
         self.INTEGER_EXPR = r'[0-9]+'
 
         # Metodos
-        self._operators_widget_()
-        self._datatype_selector_widget_()
+        self._widget_operators_()
+        self._widget_singular_iterable_range_()
         self._calculate_chunk_()
         self._fetch_data_()
         self._construct_flet_columns_()
@@ -137,7 +138,8 @@ class DatatableORM(ft.Column):
         self._layout_()
 
     # === Metodos inicializacion ===
-    def _operators_widget_(self):
+    def _widget_operators_(self):
+        """ Construye widget 'Desplegable' -> Selector de operador. """
         self.domain_select_operator = ft.Dropdown(
             menu_height=300,
             width=700,
@@ -168,7 +170,7 @@ class DatatableORM(ft.Column):
         self.tags_container.content.controls.remove(e.control)
         self.page.update()
 
-    def _datatype_selector_widget_(self):
+    def _widget_singular_iterable_range_(self):
         """
         Tipos validos:
         1. Singular
@@ -286,15 +288,23 @@ class DatatableORM(ft.Column):
 
     def _fetch_data_(self) -> None:
         """Carga toda la tabla en memoria"""
-        if self.name_domain is None:
-            self.container = self.model.chunk(**self.chunk).all().container()
-        else:
+        if self.name_domain and not self.advanced_domain:
             self.container = (
                 self.model.chunk(**self.chunk)
                 .filter(**self.name_domain)
                 .all()
                 .container()
             )
+        elif self.advanced_domain:
+            self.container = (
+                self.model
+                .chunk(**self.chunk)
+                .filter(**self.advanced_domain)
+                .all()
+                .container()
+            )
+        else:
+            self.container = self.model.chunk(**self.chunk).all().container()
 
     def _construct_flet_columns_(self) -> None:
         """Extracción de columnas; Lista de columnas Flet"""
@@ -375,6 +385,7 @@ class DatatableORM(ft.Column):
             name_field = self.model._metadata[self.table]["columns"][1]
             # Dominio del query:
             domain = {f"{self.table}__{name_field}__like": selection}
+            self.advanced_domain = False
             self.name_domain = domain
             # Se extrae la información:
             self.current_page = 1
@@ -389,8 +400,8 @@ class DatatableORM(ft.Column):
     def _build_search_bar_tiles_(self, items):
         """
         Construye las opciones a mostrar en la searchbar:
-        Esta construcción esta optimizada porque solo construye segun el query
-        de opciones que se ajustan al patron de busqueda.
+        Esta construcción esta optimizada porque solo construye según el query
+        de opciones que se ajustan al patrón de busqueda.
         """
         # Se ocupan ft.ListTile() para rellena la lista
         bar_tiles: list[ft.Control] = [
@@ -546,7 +557,7 @@ class DatatableORM(ft.Column):
             self._fetch_data_()
             self._construct_flet_rows_()
             self._vector_length_()
-            # Esta validación es delicada; Si el row no es un None -> Continuar.
+            # Validación delicada; Si el row no es un None -> Continuar.
             if self.length >= 1 and self.rows[0][0] is not None:
                 self.datatable.rows = self.flet_rows
                 if self.counter is not None:
@@ -766,7 +777,7 @@ class DatatableORM(ft.Column):
 
     def domain_dialog(self, e):
         self.alert = ft.AlertDialog()
-        self._datatype_selector_widget_()
+        self._widget_singular_iterable_range_()
         self.alert.title = ft.Text(value="Dominio Avanzado")
         msg = (
             "1. Especifique el campo por el cual desea hacer el filtro. "
@@ -845,19 +856,13 @@ class DatatableORM(ft.Column):
         def query_avanzado(valores: list[any] | str = None):
             if valores is not None:
                 kw = {f"{self.table}__{FD}__{OP}": valores}
+                self.advanced_domain = kw
                 self.page.pop_dialog()
                 self.current_page = 1
                 if self.counter is not None:
                     self.counter.value = str(self.current_page)
                 self._calculate_chunk_()
-                self.container = (
-                    self
-                    .model
-                    .filter(**kw)
-                    .chunk(**self.chunk)
-                    .all()
-                    .container()
-                )
+                self._fetch_data_()
                 self._construct_flet_rows_()
                 self._vector_length_()
                 self.datatable.rows = self.flet_rows
@@ -978,7 +983,7 @@ class DatatableORM(ft.Column):
             content=ft.Text("Cerrar"),
             on_click=lambda self: self.page.pop_dialog()
         )
-        self.alert.content = ft.Text(value=msg, size=18, italic=True)
+        self.alert.content = ft.Text(value=msg, size=18, italic=False)
         self.alert.open = True
         self.page.show_dialog(self.alert)
 
