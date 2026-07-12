@@ -109,7 +109,7 @@ class MainGear(ft.Row):
 
                 function = sidebar.get("function", None)
                 label = sidebar.get("label", None)
-                icon = sidebar.get("icon", None)
+                icon = sidebar.get("icon", "").upper()
 
                 # No valido el icono porque este puede ser None.
                 validate = ((function is None),(label is None))
@@ -118,7 +118,7 @@ class MainGear(ft.Row):
                     raise ValueError("Sidebar empty metadata error.")
 
                 button = ft.Button(
-                    icon=getattr(ft.Icons, icon, None),
+                    icon=getattr(ft.Icons, icon, "all_inbox"),
                     on_click=self.manejar_click,
                     content=label,
                     key=modulo,

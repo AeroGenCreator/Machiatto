@@ -4,7 +4,7 @@ PACKAGE = {
         {
         "label": "Inventario",
         "path": "packages.inventory.views.items",
-        "icons": "all_inbox",
+        "icon": "all_inbox",
         "function": "default"
         },
     "container": {

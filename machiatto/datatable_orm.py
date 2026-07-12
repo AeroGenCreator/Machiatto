@@ -3,7 +3,7 @@ import datetime
 import re
 import uuid
 from functools import partial
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 # Modulos Terceros
 import flet as ft
@@ -616,6 +616,7 @@ class DatatableORM(ft.Column):
             # Si se tiene un formulario resetear.
             self.this_row = None
             self.this_index = "IDxxx1"
+            self.response = ""
             self.sidebar_container.visible = (
                 not self.sidebar_container.visible
             )
@@ -748,12 +749,12 @@ class DatatableORM(ft.Column):
 
         if update:
             kwargs = {}
-            # El indice de la fila actual.
-            current_row_index = data.pop(0)
+            # El indice de la fila actual existe en self.this_row
             # Iteracion de los datos ordenados sin el index.
+            data.pop(0)
             for index, elemento in enumerate(data, start=1):
                 arg = f"{TABLE}__{self.columns[index]}__{self.columns[0]}__same"
-                kwargs.update({arg: (elemento, current_row_index)})
+                kwargs.update({arg: (elemento, self.this_index)})
             try:
                 self.model.u(**kwargs)
             except ValidationError as exc:
@@ -772,7 +773,7 @@ class DatatableORM(ft.Column):
             except Exception as e:
                 self.alert = ft.AlertDialog()
                 self.alert.title = ft.Text("¡Error a nivel ORM! - Rollback")
-                self.alert.content = ft.Text(e)
+                self.alert.content = ft.Text(f"{e}")
                 self.alert.actions = [
                     ft.Button(
                         content=ft.Text(value="Cerrar"),
@@ -803,7 +804,7 @@ class DatatableORM(ft.Column):
             except Exception as e:
                 self.alert = ft.AlertDialog()
                 self.alert.title = ft.Text("¡Error a nivel ORM! - Rollback")
-                self.alert.content = ft.Text(e)
+                self.alert.content = ft.Text(f"{e}")
                 self.alert.actions = [
                     ft.Button(
                         content=ft.Text(value="Cerrar"),
@@ -1448,6 +1449,7 @@ class DatatableORM(ft.Column):
                 if isinstance(
                     OBJECT, (
                         machiatto_dataclasses.ButtonItem,
+                        machiatto_dataclasses.InputField,
                     )
                 ):
 
@@ -1458,6 +1460,33 @@ class DatatableORM(ft.Column):
                                 content=OBJECT.string or "",
                                 on_click=partial(OBJECT.function, self),
                                 key="developer_controller"
+                            )
+                        )
+                    if isinstance(OBJECT, machiatto_dataclasses.InputField):
+                        VALUE = ft.Text(OBJECT.value) if OBJECT.value else None
+                        RESPONSE = ft.TextField(
+                            label=ft.Text(OBJECT.string) or None,
+                            value=VALUE
+                        )
+                        controls.append(
+                            ft.Container(
+                                expand=True,
+                                border_radius=10,
+                                content=ft.Row(
+                                    controls=[
+                                        RESPONSE,
+                                        ft.Button(
+                                            content=ft.Text("Enviar"),
+                                            icon=ft.Icons.CHECK,
+                                            on_click=lambda e, res=RESPONSE:
+                                                self.send_response(
+                                                e,
+                                                response=res,
+                                                function=OBJECT.function
+                                            )
+                                        ),
+                                    ]
+                                )
                             )
                         )
 
@@ -1478,6 +1507,10 @@ class DatatableORM(ft.Column):
             horizontal=False,
         )
 
+    def send_response(self, e, response: ft.TextField, function: Callable):
+        self.response = response.value
+        function(self)
+
     # === GUARDADO CONTROLADORES PERSONALIZADOS ===
     def ensure_store(self) -> None:
         """ Para cualquier controlador personalizado, lo primero
@@ -1491,6 +1524,25 @@ class DatatableORM(ft.Column):
             line = [f"{CTAB}__{ICOL}__desc"]
             irow, icol = self.model.sort(*line).chunk(limit=1).all().raw()
             self.this_index = irow[0][0]
+
+    # === REFRESCAR LA TABLA ===
+    def refresh(self):
+        # Cerrar sidebar - Limpiar contenido
+        status = self.sidebar_container.visible
+        if status:
+            self.sidebar_container.visible = not self.sidebar_container.visible
+            self.sidebar_container.content = None
+            self.this_row = None
+            self.this_index = "IDxxx1"
+            self.response = ""
+
+        # Refrescar el frontend
+        self._calculate_chunk_()
+        self._fetch_data_()
+        self._construct_flet_rows_()
+        self._vector_length_()
+        self.datatable.rows = self.flet_rows
+        self.update()
 
     # === CAPA SUPERIOR; MONTAR WIDGETS ===
     def _layout_(self) -> None:

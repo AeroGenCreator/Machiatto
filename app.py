@@ -6,6 +6,7 @@ import flet as ft
 from machiatto.container import MainContainer, ShellContaniner
 from machiatto.gear import MainGear
 from machiatto.package_loader import load_models, mapper, read_manifest
+from packages.users.models.users import init_users
 
 # 1. Correccion; Lectura del manifest
 container_items, sidebar_button, dynamic_models = read_manifest()
@@ -13,6 +14,9 @@ container_items, sidebar_button, dynamic_models = read_manifest()
 load_models(dynamic_models)
 # 3. Mapea "Boton" | "evento"
 modulos = mapper(content=container_items, sidebar_button=sidebar_button)
+# 4. Paquete obligatorio: 'users'. Carga login keys.
+STATUS = init_users()
+
 # PENDIENTE: SHELL, CONTAINER, SIDEBAR(event handler)
 
 def main(page: ft.Page):

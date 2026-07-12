@@ -21,7 +21,7 @@ DataTableORM.
 
 # Python
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Optional
 
 
 @dataclass
@@ -30,7 +30,16 @@ class NavigationBarItem:
     name: str
     key: str
 
+
 @dataclass
 class ButtonItem:
     string: str
     function: Callable
+
+
+@dataclass
+class InputField:
+    string: str
+    value: Optional[str]
+    function: Callable
+    settings: Optional[any]
