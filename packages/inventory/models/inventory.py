@@ -12,7 +12,7 @@ class Inventory(PanCakesORM):
     saleable = datatype.Bool(comment="Es Vendible")
     extras = datatype.Text(comment="Notas Extras")
     sold = datatype.TimeStamp(
-        comment="Fecha Hora Venta", compute=lambda x: datatype.TimeStamp.now()
+        comment="Fecha Hora Venta", compute="computar_hora_actual"
     )
     registry = datatype.Date(comment="Fecha Ingreso")
     category_id = datatype.ForeignKey(
@@ -20,3 +20,6 @@ class Inventory(PanCakesORM):
         second_table="category",
         column_id="category_id",
     )
+
+    def computar_hora_actual(self):
+        return datatype.TimeStamp.now()

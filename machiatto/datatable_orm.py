@@ -2,6 +2,7 @@
 import datetime
 import re
 import uuid
+from functools import partial
 from typing import List, Optional
 
 # Modulos Terceros
@@ -9,6 +10,10 @@ import flet as ft
 
 # Modulos Pancakes
 from pancakes.models.model import PanCakesORM
+from pydantic import ValidationError
+
+# Propio del framework
+from . import machiatto_dataclasses
 
 
 def calculo_de_fecha():
@@ -58,6 +63,8 @@ class DatatableORM(ft.Column):
             icon=ft.Icons.FILTER_LIST
         )
 
+        self.this_row = None
+        self.this_index = "IDxxx1"
         self.name_domain = False
         self.current_page = 1
         self.max_rows = 15
@@ -505,7 +512,8 @@ class DatatableORM(ft.Column):
             content=ft.ListView(
                 controls=[
                     ft.Row(
-                        controls=[self.datatable], scroll=ft.ScrollMode.ADAPTIVE
+                        controls=[self.datatable],
+                        scroll=ft.ScrollMode.ADAPTIVE
                     )
                 ],
                 expand=True,
@@ -596,21 +604,33 @@ class DatatableORM(ft.Column):
         2. Si no Sidebar -> Formulario & Seleccion fila actual, abre Sidebar.
         3. Si Sidebar -> Cierra Sidebar, limpia contenido, no selecciona fila.
         """
+
+        self.this_row = e  # Guarda la fila actual y su indice.
+        self.this_index = self.this_row.control.cells[0].content.value
+
         for row in self.flet_rows:
             row.selected = False
         self.datatable.rows = self.flet_rows
         status = self.sidebar_container.visible
         if status:
-            self.sidebar_container.visible = not self.sidebar_container.visible
+            # Si se tiene un formulario resetear.
+            self.this_row = None
+            self.this_index = "IDxxx1"
+            self.sidebar_container.visible = (
+                not self.sidebar_container.visible
+            )
             self.sidebar_container.content = None
         else:
             e.control.selected = not e.control.selected
-            self.sidebar_container.visible = not self.sidebar_container.visible
+            self.sidebar_container.visible = (
+                not self.sidebar_container.visible
+            )
             current_row = [v.content.value for v in e.control.cells]
             update_data = dict(zip(self.columns, current_row))
             self.form(update_data=update_data)
             self.sidebar_container.content = self.form_widget
         self.update()
+
 
     def save_changes(self, e, update=False) -> None:
         # Status Barra lateral
@@ -622,6 +642,7 @@ class DatatableORM(ft.Column):
         data = {}
         timestamp = {}
         for field in self.form_controls:
+
             # key -> metada [datetime][tabla, col, posicion & validacion]:
             PARTS = field.key.split("__")
 
@@ -664,7 +685,7 @@ class DatatableORM(ft.Column):
             if isinstance(field, ft.TextField):
                 value = field.value
             elif isinstance(field, ft.Switch):
-                value = field.value
+                value = int(field.value)
             elif isinstance(field, ft.Button):
                 value = field.data.value
                 if isinstance(value, datetime.datetime):
@@ -682,7 +703,10 @@ class DatatableORM(ft.Column):
                 if TYPE == "FOREIGN KEY" and value is not None:
                     domain = {f"{REFERENCES}__{NAME}__same": value}
                     row, col = (
-                        NEW_MODEL.filter(**domain).all(ids=True).raw(align=True)
+                        NEW_MODEL.
+                        filter(**domain)
+                        .all(ids=True)
+                        .raw(align=True)
                     )
 
                     if row:
@@ -730,12 +754,64 @@ class DatatableORM(ft.Column):
             for index, elemento in enumerate(data, start=1):
                 arg = f"{TABLE}__{self.columns[index]}__{self.columns[0]}__same"
                 kwargs.update({arg: (elemento, current_row_index)})
-            self.model.u(**kwargs)
+            try:
+                self.model.u(**kwargs)
+            except ValidationError as exc:
+                msg = repr(exc.errors()[0])
+                self.alert = ft.AlertDialog()
+                self.alert.title = ft.Text("¡Error a nivel ORM! - Rollback")
+                self.alert.content = ft.Text(msg)
+                self.alert.actions = [
+                    ft.Button(
+                        content=ft.Text(value="Cerrar"),
+                        on_click=lambda self: self.page.pop_dialog()
+                    )
+                ]
+                self.page.show_dialog(self.alert)
+                return
+            except Exception as e:
+                self.alert = ft.AlertDialog()
+                self.alert.title = ft.Text("¡Error a nivel ORM! - Rollback")
+                self.alert.content = ft.Text(e)
+                self.alert.actions = [
+                    ft.Button(
+                        content=ft.Text(value="Cerrar"),
+                        on_click=lambda self: self.page.pop_dialog()
+                    )
+                ]
+                self.page.show_dialog(self.alert)
+                return
         else:
             # kwargs - modelo actual
             kwargs = {TABLE: [tuple(data)]}
             # Insertar datos modelo actual
-            self.model.i(**kwargs)
+            try:
+                self.model.i(**kwargs)
+            except ValidationError as exc:
+                msg = repr(exc.errors()[0])
+                self.alert = ft.AlertDialog()
+                self.alert.title = ft.Text("¡Error a nivel ORM! - Rollback")
+                self.alert.content = ft.Text(msg)
+                self.alert.actions = [
+                    ft.Button(
+                        content=ft.Text(value="Cerrar"),
+                        on_click=lambda self: self.page.pop_dialog()
+                    )
+                ]
+                self.page.show_dialog(self.alert)
+                return
+            except Exception as e:
+                self.alert = ft.AlertDialog()
+                self.alert.title = ft.Text("¡Error a nivel ORM! - Rollback")
+                self.alert.content = ft.Text(e)
+                self.alert.actions = [
+                    ft.Button(
+                        content=ft.Text(value="Cerrar"),
+                        on_click=lambda self: self.page.pop_dialog()
+                    )
+                ]
+                self.page.show_dialog(self.alert)
+                return
 
         # Cerrar sidebar - Limpiar contenido
         if status:
@@ -1365,12 +1441,56 @@ class DatatableORM(ft.Column):
                     )
                 )
 
+        # Construcción de elementos en la GUI personalizados.
+        if self.controllers:
+            for OBJECT in self.controllers:
+
+                if isinstance(
+                    OBJECT, (
+                        machiatto_dataclasses.ButtonItem,
+                    )
+                ):
+
+                    # Renderizado: Boton Personalizado.
+                    if isinstance(OBJECT, machiatto_dataclasses.ButtonItem):
+                        controls.append(
+                            ft.Button(
+                                content=OBJECT.string or "",
+                                on_click=partial(OBJECT.function, self),
+                                key="developer_controller"
+                            )
+                        )
+
+                else:
+                    msg = (
+                        "Solicitud de widget invalida. Se paso un componente "
+                        "a la lista de controladores 'DatatableORM' "
+                        "que no es valido para ser renderizado en la GUI. "
+                        "revisar la listas de componentes validos por "
+                        "'Machiatto Framework'."
+                    )
+                    raise ValueError(msg)
+
         # Se declara una vista de scroll vertical para los formularios.
         self.form_widget = ft.ListView(
             controls=[ft.Column(controls=controls, spacing=20, expand=True)],
-            expand=True,
+            expand=False,
             horizontal=False,
         )
+
+    # === GUARDADO CONTROLADORES PERSONALIZADOS ===
+    def ensure_store(self) -> None:
+        """ Para cualquier controlador personalizado, lo primero
+        que se debe hacer es asegurar el guardado para obtener el 'id'."""
+        if self.this_index is not None and self.this_index != "IDxxx1":
+            self.save_changes(e=self.this_row, update=True)
+        else:
+            self.save_changes(e=False, update=False)
+            ICOL = self.columns[0]
+            CTAB = self.table
+            line = [f"{CTAB}__{ICOL}__desc"]
+            irow, icol = self.model.sort(*line).chunk(limit=1).all().raw()
+            self.this_index = irow[0][0]
 
     # === CAPA SUPERIOR; MONTAR WIDGETS ===
     def _layout_(self) -> None:

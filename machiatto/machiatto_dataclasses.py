@@ -30,3 +30,7 @@ class NavigationBarItem:
     name: str
     key: str
 
+@dataclass
+class ButtonItem:
+    string: str
+    function: Callable
