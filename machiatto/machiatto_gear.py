@@ -1,3 +1,22 @@
+# ============================================================================
+# Machiatto
+# A modular business application framework for Python.
+#
+# Built on:
+#   - PanCakesORM
+#   - Flet
+#
+# Features:
+#   - Module system
+#   - MVC architecture
+#   - Form and table views
+#   - Advanced search and filters
+#   - Declarative UI components
+#
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+# ============================================================================
+
 import flet as ft
 
 from packages.users.models.users import Users
@@ -116,10 +135,9 @@ class MainGear(ft.Row):
         sidebar_botones.append(
             ft.Button(
                 content=ft.Text(
-                    value="Cerrar Sesión",
-                    color=ft.Colors.WHITE
+                    value="Cerrar Sesión"
                 ),
-                bgcolor=ft.Colors.RED_500,
+                bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
                 on_click=self.logout,
                 icon=ft.Icons.LOGOUT
             )
@@ -146,7 +164,11 @@ class MainGear(ft.Row):
                 button = ft.Button(
                     icon=getattr(ft.Icons, icon, "all_inbox"),
                     on_click=self.manejar_click,
-                    content=label,
+                    content=ft.Text(
+                        value=label,
+                        font_family="Barlow",
+                        size=18
+                    ),
                     key=modulo,
                 )
 
@@ -162,10 +184,10 @@ class MainGear(ft.Row):
                     src="../assets/application/icon.png",
                     fit=ft.BoxFit.CONTAIN,
                 ),
-                width=64,
-                height=64,
+                width=128,
+                height=128,
                 clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
-                border_radius=12
+                border_radius=8
             )
         )
 
@@ -208,9 +230,16 @@ class MainGear(ft.Row):
         if not res:
             self.pagina.show_dialog(
                 ft.AlertDialog(
-                    title=ft.Text(size=18, value="Credenciales invalidas"),
+                    title=ft.Text(
+                        size=22,
+                        value="Credenciales invalidas",
+                        font_family="Barlow"
+                    ),
                     content=ft.Text(
-                        value="Correo o contraseña invalidos."
+                        value=(
+                            "Correo o contraseña invalidos. "
+                            "Intente de nuevo."
+                        )
                     ),
                     actions=[
                         ft.Button(
@@ -228,6 +257,12 @@ class MainGear(ft.Row):
             self.construir_botones_sidebar()
 
     def form(self):  # Funciona
+        self.greetings = ft.Text(
+            "¡Bienvenido!",
+            size=40,
+            weight=ft.FontWeight.W_700,
+            font_family="Barlow"
+        )
         self.email = ft.TextField(
             label=ft.Text(value="Correo Electronico"),
             autofill_hints=ft.Text("ejemplo@gmail.com"),
@@ -237,18 +272,21 @@ class MainGear(ft.Row):
             password=True
         )
         self.submit = ft.Button(
-            content=ft.Text(value="Entrar"),
+            content=ft.Text(value="Validar & Entrar"),
             icon=ft.Icons.LOGIN,
             on_click=self.login,
         )
 
         self.login_form = ft.Column(
             controls=[
+                self.greetings,
                 self.email,
                 self.password,
                 self.submit
             ],
             alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            spacing=15
         )
 
         self.controls = self.login_form

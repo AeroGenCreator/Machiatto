@@ -1,46 +1,73 @@
-# Lanzador de aplicacion
+# ============================================================================
+# Machiatto
+# A modular business application framework for Python.
+#
+# Built on:
+#   - PanCakesORM
+#   - Flet
+#
+# Features:
+#   - Module system
+#   - MVC architecture
+#   - Form and table views
+#   - Advanced search and filters
+#   - Declarative UI components
+#
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+# ============================================================================
 
-# Carga de metadata
+# ============================================================================
+# Modulos
 import flet as ft
 
-from machiatto.gear import MainGear
+from machiatto.machiatto_gear import MainGear
 from machiatto.package_loader import load_models, mapper, read_manifest
 from packages.users.models.users import init_users
+# ============================================================================
 
-# 1. Correccion; Lectura del manifest
-container_items, sidebar_button, dynamic_models = read_manifest()
+# 1. Lectura de directorio 'packages'.
+container_items, sidebar_buttons, dynamic_models = read_manifest()
 # 2. Carga de todos los modelos declarados en el maniest
 load_models(dynamic_models)
 # 3. Mapea "Boton" | "evento"
-modulos = mapper(content=container_items, sidebar_button=sidebar_button)
+modulos = mapper(content=container_items, sidebar_button=sidebar_buttons)
 # 4. Paquete obligatorio: 'users'. Carga login keys.
 STATUS = init_users()
+print(STATUS)
 
 # Contenedor Maestro
 class MainContainer(ft.Container):
     """
-    Este contenedor debe manejar logins.
+    Contendor padre de la apliacion
+    Engloba el cascaron de vistas construido
+    para 'Machiato' framework.
     """
     def __init__(self, content):
         super().__init__()
         self.border_radius = 10
         self.padding = 10
         self.expand=True
-        self.content = self.content
+        self.content = content
         self.update()
 
 
 def main(page: ft.Page):
     """
     Ejecución principal de flet.
-    1. Definición de las paginas.
-    2. Instancia de contenedores y vistas.
+    1. Definición 'Pagina'.
+    2. Monta 'MainContainer' en 'Pagina'.
     """
+    page.fonts = {
+        "Barlow": "./assets/fonts/Barlow-ExtraBold.ttf",
+        "Carme": "./assets/fonts/Carme-Regular.ttf"
+    }
+
+    page.theme = ft.Theme(font_family="Carme", color_scheme_seed=ft.Colors.BLUE)
+    page.dark_theme = ft.Theme(color_scheme_seed=ft.Colors.AMBER)
     page.title = "Macchiato"
     page.window.width = 1080
     page.window.height = 720
-    page.theme = ft.Theme(color_scheme_seed=ft.Colors.GREEN)
-    page.dark_theme = ft.Theme(color_scheme_seed=ft.Colors.GREY)
 
     shell = MainGear(modulos=modulos, pagina=page)
 

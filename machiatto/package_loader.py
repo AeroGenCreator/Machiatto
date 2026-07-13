@@ -1,17 +1,38 @@
+# ============================================================================
+# Machiatto
+# A modular business application framework for Python.
+#
+# Built on:
+#   - PanCakesORM
+#   - Flet
+#
+# Features:
+#   - Module system
+#   - MVC architecture
+#   - Form and table views
+#   - Advanced search and filters
+#   - Declarative UI components
+#
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+# ============================================================================
+
 """
 Carga interactiva de modulos.
 
 Se carga:
-1. Boton para barra lateral. Accion de menu principal.
-2. Carga de los NavigationBarItem's
-3. Modelos para poder ejecutarlos.
+1. Botonones Barra Lateral. Accion -> Menu principal.
+2. Modelos encontrados en 'packages'.
 """
 
-# Modulos Python
+# =============================================================================
+# Modulos
 import importlib
 from pathlib import Path
+# =============================================================================
 
-# La ruta aqui es estatica. Modificar para ser leida desde un .env
+# Por el momento ruta estatica 'packages'.
+# Constantes: Ruta / Keywords
 IMPORT_COMPLEMENT = "packages"
 PATH = Path.cwd() / IMPORT_COMPLEMENT
 MANIFEST_KEY_WORD = "__manifest__.py"
@@ -98,6 +119,10 @@ def load_models(models_list: list):
 
 def mapper(content: dict, sidebar_button: dict):
     """
+    Prepara control de navegacion -> Funcion 'Vista'.
+    Pensado para la navegacion dentro de 'DatatableORM'.
+
+    ============================================================================
     Ejemplo de ruta a las instancias de "topbar" - "contenido respuesta"
     {
         'inventory': {

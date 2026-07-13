@@ -3,8 +3,13 @@ from pancakes.sql import datatype
 
 
 class Inventory(PanCakesORM):
+
+    # === MODELO CONFIG ===
+
     _table = "inventory"
     _depends = ["category"]
+
+    # === MODELO CAMPOS ===
 
     name = datatype.Char(comment="Nombre Producto", required=True)
     qty = datatype.Int(comment="Cantidad Stock", required=True)
@@ -20,6 +25,8 @@ class Inventory(PanCakesORM):
         second_table="category",
         column_id="category_id",
     )
+
+    # === MODELO LOGICA ===
 
     def computar_hora_actual(self):
         return datatype.TimeStamp.now()

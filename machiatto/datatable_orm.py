@@ -1,20 +1,43 @@
-# Modulos Python
+# ============================================================================
+# Machiatto
+# A modular business application framework for Python.
+#
+# Built on:
+#   - PanCakesORM
+#   - Flet
+#
+# Features:
+#   - Module system
+#   - MVC architecture
+#   - Form and table views
+#   - Advanced search and filters
+#   - Declarative UI components
+#
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+# ============================================================================
+
+"""
+Componente: 📋
+Recibe un modelo de PanCakesORM -> Construye vistas 'Tabla - Formulario'.
+"""
+
+# ============================================================================
+
+# Modulos
 import datetime
 import re
 import uuid
 from functools import partial
 from typing import Callable, List, Optional
 
-# Modulos Terceros
 import flet as ft
-
-# Modulos Pancakes
 from pancakes.models.model import PanCakesORM
 from pydantic import ValidationError
 
-# Propio del framework
 from . import machiatto_dataclasses
 
+# ============================================================================
 
 def calculo_de_fecha():
     # datetime.now().astimezone() detecta automáticamente el offset del sistema
@@ -325,7 +348,8 @@ class DatatableORM(ft.Column):
             self.flet_columns = [
                 ft.DataColumn(
                     label=ft.Text(
-                        str(self.container[self.table][COL]["label"])
+                        str(self.container[self.table][COL]["label"]),
+                        font_family="Barlow",
                     )
                 )
                 for COL in self.columns
@@ -855,17 +879,22 @@ class DatatableORM(ft.Column):
     def domain_dialog(self, e):
         self.alert = ft.AlertDialog()
         self._widget_singular_iterable_range_()
-        self.alert.title = ft.Text(value="Dominio Avanzado")
+        self.alert.title = ft.Text(
+            value="Dominios Avanzados",
+            font_family="Barlow",
+            size=30
+        )
         msg = (
-            "1. Especifique el campo por el cual desea hacer el filtro. "
-            "2. Seleccione un operado de comparacion. "
-            "3. Agregue el 'dato' o 'datos' de referencia en los deplegables. "
-            "Importante: El operador y el operador aplican estrictamente a "
-            "situaciones distintas. Ej. 'name', '=', 'Omar'. "
+            "1. Especifique el campo por el cual desea hacer el filtro.\n"
+            "2. Seleccione un operado de comparacion.\n"
+            "3. Agregue el 'dato' o 'datos' de referencia en los deplegables.\n\n"
+            "Importante: El operador y el tipo de dato trabajan estrictamente en "
+            "conjunto segun la situacion. Ej. 'name', '=', 'Omar'. "
         )
         self.alert.content = ft.Text(
             value=msg,
-            italic=True
+            italic=False,
+            size=20
         )
         validate = (
             (self.domain_select_column is not None),
@@ -1042,7 +1071,9 @@ class DatatableORM(ft.Column):
         self.alert = ft.AlertDialog()
         self.alert.title = ft.Text(
             color=ft.Colors.RED_600,
-            value="Uso Incorrecto de Operadores"
+            value="Uso Incorrecto de Operadores",
+            font_family="Barlow",
+            size=24,
         )
         msg = (
             "Se esta intentando aplicar dominio avanzado usando un operador "
@@ -1065,7 +1096,11 @@ class DatatableORM(ft.Column):
         self.page.show_dialog(self.alert)
 
     def accept_changes(self, e):
-        self.alert.title = ft.Text(value="Acción Peligrosa")
+        self.alert.title = ft.Text(
+            value="Acción Peligrosa",
+            font_family="Barlow",
+            size=22,
+        )
         msg = (
             "Estas por eliminar un registro de manera permanente "
             "de la base de datos. Aceptar esta accion hara imposible "
@@ -1077,7 +1112,7 @@ class DatatableORM(ft.Column):
             bgcolor=ft.Colors.RED_600,
             color=ft.Colors.WHITE,
         )
-        self.alert.content = ft.Text(value=msg)
+        self.alert.content = ft.Text(value=msg, size=16)
         self.alert.actions = [accept]
         self.alert.open = True
         self.page.show_dialog(self.alert)
@@ -1120,7 +1155,8 @@ class DatatableORM(ft.Column):
         self.alert = ft.AlertDialog()
         self.alert.title = ft.Text(
             value="¡Imposible de completar!",
-            color=ft.Colors.RED_600
+            font_family="Barlow",
+            size=22,
         )
         msg = (
             "El registro no se pudo eliminar. "
@@ -1131,7 +1167,8 @@ class DatatableORM(ft.Column):
         )
         self.alert.content = ft.Text(
             msg,
-            italic=True
+            italic=False,
+            size=16
         )
         self.alert.actions = [
             ft.Button(
@@ -1156,7 +1193,9 @@ class DatatableORM(ft.Column):
 
         TITLE = ft.Container(
             content=ft.Text(
-                value="Vista Formulario", weight=ft.FontWeight.W_900
+                value="Vista Formulario",
+                font_family="Barlow",
+                size=20
             )
         )
 

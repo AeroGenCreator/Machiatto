@@ -1,3 +1,9 @@
+"""
+Comentario importante del desarrollador. 🐍
+Este modelo es utilizado por el framework al momento de construir
+la aplicacion. No se recomienda elminar o alterarlo.
+"""
+
 # Modulos Python
 import os
 import sqlite3
@@ -21,7 +27,7 @@ class Users(PanCakesORM):
         comment="Correo", required=False, unique=True, readonly=True
     )
     password = datatype.Char(comment="Password", required=True, unique=True)
-    activo = datatype.Bool(comment="Activo", default=True)
+    activo = datatype.Bool(comment="Activo")
 
 
 def init_users():

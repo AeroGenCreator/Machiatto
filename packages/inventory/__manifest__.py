@@ -3,12 +3,12 @@ PACKAGE = {
     "menu":
         {
         "label": "Inventario",
-        "path": "packages.inventory.views.items",
+        "path": "packages.inventory.views.menus",
         "icon": "all_inbox",
-        "function": "default"
+        "function": "main"
         },
     "container": {
-        "packages.inventory.views.items": ["inventory", "category"]
+        "packages.inventory.views.menus": ["inventory", "category"]
         },
     "models": [
         {
