@@ -1,5 +1,7 @@
 import flet as ft
 
+from packages.users.models.users import Users
+
 
 class MainGear(ft.Row):
     """
@@ -12,17 +14,23 @@ class MainGear(ft.Row):
     """
     def __init__(self, modulos, pagina):
         super().__init__()
+        self.alignment = ft.MainAxisAlignment.CENTER
         self.modulos = modulos
         self.pagina = pagina
+        self.expand = True
         # sidebar contenedor
         self.sidebar = ft.Container(content=None)
         # navegador
         self.navegador = ft.Container(content=None)
         # contenido_vista_contendor
-        self.contenido_vista = ft.Container(content=None)
+        self.contenido_vista = ft.Container(
+            expand=10,
+            content=ft.Column(),
+            visible=True
+        )
         # Modulo actual:
         self.current_module = None
-        self.construir_botones_sidebar()
+        self.form()
 
     def navegar_modulo(self, e):
         boton = e.control
@@ -48,27 +56,28 @@ class MainGear(ft.Row):
         self.pagina.update()
 
     def construir_navegacion(self):
-        metadata = getattr(self, self.current_module, None)
-        if metadata is None:
-            raise ValueError("Error when building navigation bar.")
-
-        nav_buttons = []
-        for label, function in metadata.items():
-            nav_buttons.append(
-                ft.Button(
-                    content=label,
-                    on_click=self.navegar_modulo
-                )
-            )
-
         self.navegador = ft.Container(
             content=ft.ListView(
                 ft.Row(
-                    controls=nav_buttons
+                    controls=None
                 )
             ),
             expand=1
         )
+        if self.current_module is None:
+            pass
+        else:
+            metadata = getattr(self, self.current_module, None)
+            nav_buttons = []
+            for label, function in metadata.items():
+                nav_buttons.append(
+                    ft.Button(
+                        content=label,
+                        on_click=self.navegar_modulo
+                    )
+                )
+
+            self.navegador.content.controls.controls = nav_buttons
 
     def manejar_click(self, e):
         boton = e.control
@@ -96,9 +105,26 @@ class MainGear(ft.Row):
         self.controls = [self.sidebar, self.contenido_vista]
         self.pagina.update()
 
+    def logout(self, e):
+        """ Renderiza la pantalla de login """
+        self.form()
+
     def construir_botones_sidebar(self):
 
         sidebar_botones = []
+
+        sidebar_botones.append(
+            ft.Button(
+                content=ft.Text(
+                    value="Cerrar Sesión",
+                    color=ft.Colors.WHITE
+                ),
+                bgcolor=ft.Colors.RED_500,
+                on_click=self.logout,
+                icon=ft.Icons.LOGOUT
+            )
+        )
+
         for element in self.modulos:
             for modulo, metadata in element.items():
                 sidebar = metadata.get("sidebar", None)
@@ -136,8 +162,8 @@ class MainGear(ft.Row):
                     src="../assets/application/icon.png",
                     fit=ft.BoxFit.CONTAIN,
                 ),
-                width=128,
-                height=128,
+                width=64,
+                height=64,
                 clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
                 border_radius=12
             )
@@ -145,16 +171,85 @@ class MainGear(ft.Row):
 
         # Aqui se maneja la arquitectura de montado
         self.sidebar = ft.Container(
-            content=ft.ListView(
-                controls=ft.Column(
-                    controls=sidebar_botones
-                )
-            ),
+            content=ft.Column(
+                    controls=sidebar_botones,
+                    spacing=8,
+                    scroll=ft.ScrollMode.AUTO,
+                    expand=True,
+                ),
             padding=10,
             border_radius=10,
             expand=2,
-            bgcolor=ft.Colors.SURFACE_CONTAINER_LOW
+            bgcolor=ft.Colors.SURFACE_CONTAINER_LOW,
         )
 
-        self.controls = [self.sidebar, self.contenido_vista]
+        self.wrapper = ft.Container(
+            visible=True,
+            expand=True,
+            content=ft.Row(
+                controls=[self.sidebar, self.contenido_vista]
+            )
+        )
+
+        self.controls = self.wrapper
+        self.pagina.update()
+
+    def login(self):  # Funciona
+        """
+        Renderiza el formulario 'login'
+        """
+        kw = {
+            "users__correo__same__and": self.email.value,
+            "users__password__same__or": self.password.value,
+            "users__nombre__same__and": self.email.value,
+            "users__password__same": self.password.value
+        }
+        res, col = Users.filter(**kw).all().raw()
+        if not res:
+            self.pagina.show_dialog(
+                ft.AlertDialog(
+                    title=ft.Text(size=18, value="Credenciales invalidas"),
+                    content=ft.Text(
+                        value="Correo o contraseña invalidos."
+                    ),
+                    actions=[
+                        ft.Button(
+                            content=ft.Text(
+                                color=ft.Colors.WHITE,
+                                value="Intentar de Nuevo"
+                            ),
+                            bgcolor=ft.Colors.RED_500,
+                            on_click=lambda self: self.page.pop_dialog()
+                        )
+                    ]
+                )
+            )
+        else:
+            self.construir_botones_sidebar()
+
+    def form(self):  # Funciona
+        self.email = ft.TextField(
+            label=ft.Text(value="Correo Electronico"),
+            autofill_hints=ft.Text("ejemplo@gmail.com"),
+        )
+        self.password = ft.TextField(
+            label=ft.Text(value="Contraseña"),
+            password=True
+        )
+        self.submit = ft.Button(
+            content=ft.Text(value="Entrar"),
+            icon=ft.Icons.LOGIN,
+            on_click=self.login,
+        )
+
+        self.login_form = ft.Column(
+            controls=[
+                self.email,
+                self.password,
+                self.submit
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+        )
+
+        self.controls = self.login_form
         self.pagina.update()
