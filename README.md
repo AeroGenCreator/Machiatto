@@ -13,7 +13,7 @@ Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Py
 ![image](assets/images/login.png)
 ![image](assets/images/tablas.png)
 
-**Machiatto** & **PanCakesORM** trabajan en conjunto para un componente ideal para renderizar tablas. `DatatableORM` permite vistas `tabla-formulario`, busquedas y dominios avanzados (Filtrar Registros). Así mismo la inyección de componentes iterpretados por el componente al instancias de las `dataclasses` construidas para el `framework`.
+**Machiatto** & **PanCakesORM** trabajan en conjunto creando un componente ideal para el renderizado de tablas `DatatableORM`. El componente permite vistas `tabla-formulario`, busquedas y dominios avanzados. Así mismo la inyección de componentes los cuales son interpretados por el componente al instanciar de las `dataclasses` de `Machiatto Framework`.
 
 ![image](assets/images/tabla-formulario.png)
 ![image](assets/images/busqueda.png)
@@ -23,7 +23,7 @@ Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Py
 
 ### Configuración
 
-_Suponiendo que se haya usando una distribución linux. De lo contrario hacer lo mismo usando los comandos de Windows._
+_Suponiendo que se encuentra usted usando una distribución linux. De lo contrario hacer lo mismo usando los comandos de Windows._
 
 1. Activar entorno virtual
 
@@ -43,7 +43,7 @@ source .venv/bin/activate
 pip install -r requirements/requirements.txt
 ```
 
-4. Utilizar un `.env` para configuraciones globales de su proyecto (Mismas para PanCakesORM).
+4. Utilizar un `.env` para las configuraciones globales de su proyecto (Mismas para PanCakesORM).
 
 ```env
 # Solo Configuración Machiatto
@@ -55,7 +55,7 @@ ADMIN_EMAIL=ejemplo@gmail.com
 
 ### Jerarquia de directorios 🏗️ 
 
-**Machiatto** busca todos sus modulos dentro del directorio packages que trae por defecto el repositorio. Ademas tanto `.env` como la validacion de credenciales dependen del modulo pre-cargado `users`. Es vital mantenerlo o de lo contrario ajustarlo para cualquier necesidad de desarrollo.
+**Machiatto** busca todos sus modulos dentro del directorio packages que trae por defecto este repositorio. Ademas tanto `.env` como la validacion de credenciales dependen del modulo pre-cargado `users`. Es vital mantener dicho modulo o de lo contrario ajustar para cualquier necesidad de desarrollo.
 
 ```txt
 Machiatto
