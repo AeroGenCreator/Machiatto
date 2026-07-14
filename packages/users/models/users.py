@@ -33,8 +33,8 @@ class Users(PanCakesORM):
 def init_users():
     load_dotenv()
     ADMIN = os.getenv("ADMIN", "admin")
-    PASSW = os.getenv("PASSW", "admin")
-    EMAIL = os.getenv("EMAIL", None)
+    PASSW = os.getenv("ADMIN_PASSWORD", "admin")
+    EMAIL = os.getenv("ADMIN_EMAIL", None)
 
     try:
         Users.i(users=[(None, ADMIN, EMAIL, PASSW, True)])
