@@ -2,7 +2,7 @@
 
 ![image](assets/banner.png)
 
-**Machiatto** es un motor de codigo abierto pensado para la construcción rápida de software `aplicación` para pequeñas y medianas empresas. En la actualidad **machiatto** utiliza como motor de bases de datos `Sqlite3` impulsado por `PanCakesORM` como el cerebro de coordinación de modelos y logica de consultas y relaciones. El `frontend` de **machiatto** esta montado sobre componentes `Flet`, los cuales han sido construidos para representar modelos, brindando vistas de tipo `Tabla-Formulario`. 
+**Machiatto** es un motor de codigo abierto pensado para la construcción rápida de software `aplicación` para pequeñas y  empresas. En la actualidad **machiatto** utiliza como motor de bases de datos `Sqlite3` impulsado por `PanCakesORM` como el cerebro de coordinación de modelos y logica de consultas y relaciones. El `frontend` de **machiatto** esta montado sobre componentes `Flet`, los cuales han sido construidos para representar modelos, brindando vistas de tipo `Tabla-Formulario`. 
 
 Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Python3+`, olvidate de `HTML`, `CSS`, `JavaScript`, `SQL`, o algun otro lenguaje para la construccion de aplicaciones, con `Machiatto` tendras una caja de herramientas poderosa para la construcción de software empresarial.
 
@@ -13,7 +13,7 @@ Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Py
 ![image](assets/images/login.png)
 ![image](assets/images/tablas.png)
 
-**Machiatto** & **PanCakesORM** trabajan en conjunto creando un componente ideal para el renderizado de tablas `DatatableORM`. El componente permite vistas `tabla-formulario`, busquedas y dominios avanzados. Así mismo la inyección de componentes los cuales son interpretados por el componente al instanciar de las `dataclasses` de `Machiatto Framework`.
+**Machiatto** & **PanCakesORM** trabajan en conjunto creando un componente `DatatableORM` ideal para el renderizado de modelos. `DatatableORM` permite vistas `tabla-formulario`, busquedas y dominios avanzados. Así mismo se considero la inyección de controladores `Flet` los cuales son interpretados por el componente al instanciar desde las `dataclasses` de `Machiatto Framework`.
 
 ![image](assets/images/tabla-formulario.png)
 ![image](assets/images/busqueda.png)
@@ -119,3 +119,13 @@ PACKAGE = {
     ]
 }
 ```
+
+## GUI
+
+Indice: uso de fuentes en la interfaz.
+
+|Fuente|Tamaño|Elemento|
+|------|------|--------|
+|GeistMonoMedium|14|Botón|
+|GeistSansBlack|22|Alerta Titulo|
+|GeistSansRegular|14|Alerta Cuerpo|

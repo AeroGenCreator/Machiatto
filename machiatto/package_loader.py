@@ -29,6 +29,7 @@ Se carga:
 # Modulos
 import importlib
 from pathlib import Path
+
 # =============================================================================
 
 # Por el momento ruta estatica 'packages'.
@@ -111,7 +112,7 @@ def load_models(models_list: list):
             CLASS = getattr(module, class_name, None)
             # Si alguna ruta no se resuleve, mostrar error.
             if CLASS is None:
-                raise (
+                raise ValueError(
                     f"Cannot import the following model: {class_name}."
                     "Make sure to be specific with the route and the class."
                 )

@@ -4,7 +4,7 @@ PACKAGE = {
         {
         "label": "Usuarios",
         "path": "packages.users.views.menus",
-        "icon": "person",
+        "icon": "people",
         "function": "main"
         },
     "container": {

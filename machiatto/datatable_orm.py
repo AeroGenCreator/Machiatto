@@ -81,7 +81,10 @@ class DatatableORM(ft.Column):
         self.advanced_domain = False
         self.search_bar = None
         self.custom_domain = ft.Button(
-            content=ft.Text("Dominios"),
+            content=ft.Text(
+                value="Dominios",
+                font_family="GeistMonoMedium"
+            ),
             key="custom_domain",
             icon=ft.Icons.FILTER_LIST
         )
@@ -103,7 +106,11 @@ class DatatableORM(ft.Column):
         self.form_controls = []
         self.alert = ft.AlertDialog()
         self.close_alert = ft.TextButton(
-            "Cerrar", on_click=lambda e: self.page.pop_dialog()
+            ft.Text(
+                value="Cerrar",
+                font_family="GeistMonoMedium"
+            ),
+            on_click=lambda e: self.page.pop_dialog()
         )
         self.domain_select_column: Optional[None | ft.Dropdown] = None
         self.model_labels = self.model._metadata[self.table]["comments"]
@@ -214,7 +221,11 @@ class DatatableORM(ft.Column):
         self.singular_input = ft.TextField(value="")
         self.SINGULAR = ft.ExpansionPanel(
             can_tap_header=True,
-            header=ft.ListTile(title=ft.Text("Solo un valor.")),
+            header=ft.ListTile(title=ft.Text(
+                    value="Solo un valor.",
+                    font_family="GeistMonoMedium"
+                )
+            ),
             content=ft.Container(
                 expand=True,
                 padding=10,
@@ -248,7 +259,12 @@ class DatatableORM(ft.Column):
 
         self.ITERABLES = ft.ExpansionPanel(
             can_tap_header=True,
-            header=ft.ListTile(title=ft.Text("Lista de valores.")),
+            header=ft.ListTile(
+                title=ft.Text(
+                    value="Lista de valores.",
+                    font_family="GeistMonoMedium"
+                )
+            ),
             content=ft.Container(
                 expand=True,
                 padding=10,
@@ -276,7 +292,12 @@ class DatatableORM(ft.Column):
         self.second_range = ft.TextField(value="")
         self.RANGE = ft.ExpansionPanel(
             can_tap_header=True,
-            header=ft.ListTile(title=ft.Text("Rango de 2 valores.")),
+            header=ft.ListTile(
+                title=ft.Text(
+                    value="Rango de 2 valores.",
+                    font_family="GeistMonoMedium"
+                )
+            ),
             content=ft.Container(
                 padding=10,
                 expand=True,
@@ -349,7 +370,7 @@ class DatatableORM(ft.Column):
                 ft.DataColumn(
                     label=ft.Text(
                         str(self.container[self.table][COL]["label"]),
-                        font_family="Barlow",
+                        font_family="GeistSansBlack",
                     )
                 )
                 for COL in self.columns
@@ -480,7 +501,10 @@ class DatatableORM(ft.Column):
         """
 
         # Contador Numerico
-        self.counter = ft.Text(value=str(self.current_page))
+        self.counter = ft.Text(
+            value=str(self.current_page),
+            font_family="GeistSansBold",
+        )
         # Conjunto de componentes (boton, numero, boton)
         self.top_container = ft.Container(
             content=ft.Row(
@@ -491,8 +515,9 @@ class DatatableORM(ft.Column):
                 ],
                 scroll=ft.ScrollMode.ADAPTIVE,
             ),
+            expand=9,
             border_radius=5,
-            expand=10,
+            padding=5,
         )
 
         # Se asigna la funcion para dominio avanzado.
@@ -509,7 +534,10 @@ class DatatableORM(ft.Column):
             content=ft.Row(
                 controls=[
                     ft.Button(
-                        content="Nuevo",
+                        content=ft.Text(
+                            value="Agregar Registro",
+                            font_family="GeistMonoMedium",
+                        ),
                         on_click=lambda e: self.create_entry(e),
                         icon=ft.Icons.ADD,
                     )
@@ -1098,7 +1126,7 @@ class DatatableORM(ft.Column):
     def accept_changes(self, e):
         self.alert.title = ft.Text(
             value="Acción Peligrosa",
-            font_family="Barlow",
+            font_family="GeistSansBlack",
             size=22,
         )
         msg = (
@@ -1107,12 +1135,18 @@ class DatatableORM(ft.Column):
             "cualquier tipo de respaldo futuro."
         )
         accept = ft.Button(
-            content=ft.Text("Aceptar"),
+            content=ft.Text(
+                value="Aceptar",
+                font_family="GeistMonoMedium"
+            ),
             on_click=self.delete_entry,
             bgcolor=ft.Colors.RED_600,
             color=ft.Colors.WHITE,
         )
-        self.alert.content = ft.Text(value=msg, size=16)
+        self.alert.content = ft.Text(
+            value=msg,
+            font_family="GeistSansRegular"
+        )
         self.alert.actions = [accept]
         self.alert.open = True
         self.page.show_dialog(self.alert)
@@ -1155,7 +1189,7 @@ class DatatableORM(ft.Column):
         self.alert = ft.AlertDialog()
         self.alert.title = ft.Text(
             value="¡Imposible de completar!",
-            font_family="Barlow",
+            font_family="GeistSansBlack",
             size=22,
         )
         msg = (
@@ -1166,13 +1200,17 @@ class DatatableORM(ft.Column):
             "Se recomienda revisar función 'delete_entry'."
         )
         self.alert.content = ft.Text(
-            msg,
-            italic=False,
-            size=16
+            value=msg,
+            font_family="GeistSansRegular"
         )
         self.alert.actions = [
             ft.Button(
-                content=ft.Text("Cerrar"),
+                bgcolor=ft.Colors.RED_600,
+                content=ft.Text(
+                    value="Cerrar",
+                    font_family="GeistMonoMedium",
+                    color=ft.Colors.WHITE
+                ),
                 on_click=lambda self: self.page.pop_dialog()
             )
         ]
@@ -1194,8 +1232,8 @@ class DatatableORM(ft.Column):
         TITLE = ft.Container(
             content=ft.Text(
                 value="Vista Formulario",
-                font_family="Barlow",
-                size=20
+                font_family="GeistSansBlack",
+                size=22
             )
         )
 
@@ -1450,17 +1488,26 @@ class DatatableORM(ft.Column):
         # Estetica: Boton "Guardar" y "Eliminar" siempre al comienzo.
         form_header = ft.Row()
         save_button = ft.Button(
-                content="Guardar Cambios",
+                content=ft.Text(
+                    value="Guardar Cambios",
+                    font_family="GeistMonoMedium"
+                ),
                 key="save",
                 icon=ft.Icons.SAVE,
                 on_click=lambda e: self.save_changes(e, update=UPDATE),
             )
 
         delete_button = ft.Button(
-                content=ft.Text("Eliminar Registro"),
+                content=ft.Text(
+                    color=ft.Colors.WHITE,
+                    value="Eliminar Registro",
+                    font_family="GeistMonoMedium",
+                ),
                 key="delete",
+                bgcolor=ft.Colors.RED_600,
                 icon=ft.Icons.DELETE,
-                on_click=self.accept_changes
+                icon_color=ft.Colors.WHITE,
+                on_click=self.accept_changes,
             )
         form_header.controls = [save_button, delete_button]
         controls.insert(0,form_header)
@@ -1494,9 +1541,13 @@ class DatatableORM(ft.Column):
 
                     # Renderizado: Boton Personalizado.
                     if isinstance(OBJECT, machiatto_dataclasses.ButtonItem):
+                        string = OBJECT.string or ""
                         controls.append(
                             ft.Button(
-                                content=OBJECT.string or "",
+                                content=ft.Text(
+                                    value=string,
+                                    font_family="GeistMonoMedium"
+                                ),
                                 on_click=partial(OBJECT.function, self),
                                 key="developer_controller"
                             )
@@ -1515,7 +1566,10 @@ class DatatableORM(ft.Column):
                                     controls=[
                                         RESPONSE,
                                         ft.Button(
-                                            content=ft.Text("Enviar"),
+                                            content=ft.Text(
+                                                value="Enviar",
+                                                font_family="GeistMonoMedium"
+                                            ),
                                             icon=ft.Icons.CHECK,
                                             on_click=lambda e, res=RESPONSE:
                                                 self.send_response(
@@ -1541,7 +1595,14 @@ class DatatableORM(ft.Column):
 
         # Se declara una vista de scroll vertical para los formularios.
         self.form_widget = ft.ListView(
-            controls=[ft.Column(controls=controls, spacing=20, expand=True)],
+            controls=[
+                ft.Column(
+                    controls=controls,
+                    spacing=20,
+                    expand=True,
+                    horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+                )
+            ],
             expand=False,
             horizontal=False,
         )

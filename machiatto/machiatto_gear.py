@@ -53,7 +53,7 @@ class MainGear(ft.Row):
 
     def navegar_modulo(self, e):
         boton = e.control
-        index = boton.content
+        index = boton.content.value
         metadata = getattr(self, self.current_module, None)
         if metadata is None:
             raise ValueError("Error when navigating topbar. No metadata.")
@@ -78,10 +78,12 @@ class MainGear(ft.Row):
         self.navegador = ft.Container(
             content=ft.ListView(
                 ft.Row(
-                    controls=None
+                    controls=None,
+                    spacing=10,
+                    wrap=True,
                 )
             ),
-            expand=1
+            padding=2
         )
         if self.current_module is None:
             pass
@@ -91,8 +93,12 @@ class MainGear(ft.Row):
             for label, function in metadata.items():
                 nav_buttons.append(
                     ft.Button(
-                        content=label,
-                        on_click=self.navegar_modulo
+                        content=ft.Text(
+                            value=label,
+                            font_family="GeistMonoMedium"
+                        ),
+                        on_click=self.navegar_modulo,
+                        bgcolor=ft.Colors.SURFACE_BRIGHT
                     )
                 )
 
@@ -128,18 +134,21 @@ class MainGear(ft.Row):
         """ Renderiza la pantalla de login """
         self.form()
 
-    def construir_botones_sidebar(self):
+    def construir_botones_sidebar(self):  # Con Fuentes
 
         sidebar_botones = []
 
         sidebar_botones.append(
             ft.Button(
                 content=ft.Text(
-                    value="Cerrar Sesión"
+                    value="Cerrar Sesión",
+                    font_family="GeistMonoRegular",
+                    color=ft.Colors.WHITE
                 ),
-                bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST,
+                bgcolor=ft.Colors.RED_600,
                 on_click=self.logout,
-                icon=ft.Icons.LOGOUT
+                icon=ft.Icons.LOGOUT,
+                icon_color=ft.Colors.WHITE
             )
         )
 
@@ -166,8 +175,7 @@ class MainGear(ft.Row):
                     on_click=self.manejar_click,
                     content=ft.Text(
                         value=label,
-                        font_family="Barlow",
-                        size=18
+                        font_family="GeistMonoMedium"
                     ),
                     key=modulo,
                 )
@@ -178,19 +186,6 @@ class MainGear(ft.Row):
                 # Modulo como atributo, metadata de navegacion como contenido.
                 setattr(self, modulo, navigation)
 
-        sidebar_botones.append(
-            ft.Container(
-                content=ft.Image(
-                    src="../assets/application/icon.png",
-                    fit=ft.BoxFit.CONTAIN,
-                ),
-                width=128,
-                height=128,
-                clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
-                border_radius=8
-            )
-        )
-
         # Aqui se maneja la arquitectura de montado
         self.sidebar = ft.Container(
             content=ft.Column(
@@ -198,6 +193,7 @@ class MainGear(ft.Row):
                     spacing=8,
                     scroll=ft.ScrollMode.AUTO,
                     expand=True,
+                    horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
                 ),
             padding=10,
             border_radius=10,
@@ -216,7 +212,7 @@ class MainGear(ft.Row):
         self.controls = self.wrapper
         self.pagina.update()
 
-    def login(self):  # Funciona
+    def login(self):  # Con Fuentes
         """
         Renderiza el formulario 'login'
         """
@@ -232,20 +228,22 @@ class MainGear(ft.Row):
                 ft.AlertDialog(
                     title=ft.Text(
                         size=22,
-                        value="Credenciales invalidas",
-                        font_family="Barlow"
+                        value="¡Credenciales invalidas!",
+                        font_family="GeistSansBlack"
                     ),
                     content=ft.Text(
                         value=(
                             "Correo o contraseña invalidos. "
                             "Intente de nuevo."
-                        )
+                        ),
+                        font_family="GeistSansRegular"
                     ),
                     actions=[
                         ft.Button(
                             content=ft.Text(
                                 color=ft.Colors.WHITE,
-                                value="Intentar de Nuevo"
+                                value="Intentar de Nuevo",
+                                font_family="GeistMonoMedium"
                             ),
                             bgcolor=ft.Colors.RED_500,
                             on_click=lambda self: self.page.pop_dialog()
@@ -256,23 +254,30 @@ class MainGear(ft.Row):
         else:
             self.construir_botones_sidebar()
 
-    def form(self):  # Funciona
+    def form(self):  # Con Fuentes
         self.greetings = ft.Text(
             "¡Bienvenido!",
-            size=40,
-            weight=ft.FontWeight.W_700,
-            font_family="Barlow"
+            size=54,
+            font_family="GeistSansBlack",
         )
         self.email = ft.TextField(
-            label=ft.Text(value="Correo Electronico"),
-            autofill_hints=ft.Text("ejemplo@gmail.com"),
+            label=ft.Text(
+                value="Correo Electronico",
+                font_family="GeistSansRegular"
+            )
         )
         self.password = ft.TextField(
-            label=ft.Text(value="Contraseña"),
+            label=ft.Text(
+                value="Contraseña",
+                font_family="GeistSansRegular"
+            ),
             password=True
         )
         self.submit = ft.Button(
-            content=ft.Text(value="Validar & Entrar"),
+            content=ft.Text(
+                value="Validar & Entrar",
+                font_family="GeistMonoMedium"
+            ),
             icon=ft.Icons.LOGIN,
             on_click=self.login,
         )
@@ -286,7 +291,7 @@ class MainGear(ft.Row):
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=15
+            spacing=20
         )
 
         self.controls = self.login_form
