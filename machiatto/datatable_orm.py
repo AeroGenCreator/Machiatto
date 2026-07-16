@@ -909,20 +909,20 @@ class DatatableORM(ft.Column):
         self._widget_singular_iterable_range_()
         self.alert.title = ft.Text(
             value="Dominios Avanzados",
-            font_family="Barlow",
-            size=30
+            font_family="GeistSansBlack",
+            size=22
         )
         msg = (
             "1. Especifique el campo por el cual desea hacer el filtro.\n"
             "2. Seleccione un operado de comparacion.\n"
-            "3. Agregue el 'dato' o 'datos' de referencia en los deplegables.\n\n"
+            "3. Agregue el 'dato' o 'datos' de referencia en los "
+            "deplegables.\n\n"
             "Importante: El operador y el tipo de dato trabajan estrictamente en "
             "conjunto segun la situacion. Ej. 'name', '=', 'Omar'. "
         )
         self.alert.content = ft.Text(
             value=msg,
-            italic=False,
-            size=20
+            font_family="GeistSansRegular"
         )
         validate = (
             (self.domain_select_column is not None),

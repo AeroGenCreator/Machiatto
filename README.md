@@ -2,9 +2,9 @@
 
 ![image](assets/banner.png)
 
-**Machiatto** es un motor de codigo abierto pensado para la construcción rápida de software `aplicación` para pequeñas y  empresas. En la actualidad **machiatto** utiliza como motor de bases de datos `Sqlite3` impulsado por `PanCakesORM` como el cerebro de coordinación de modelos y logica de consultas y relaciones. El `frontend` de **machiatto** esta montado sobre componentes `Flet`, los cuales han sido construidos para representar modelos, brindando vistas de tipo `Tabla-Formulario`. 
+**Machiatto** es un motor de código abierto pensado para la construcción rápida de software `aplicación` para pequeñas  empresas. En la actualidad **machiatto** utiliza como motor de bases de datos `Sqlite3` impulsado por `PanCakesORM` como el cerebro de coordinación de modelos y lógica de consultas relacionales. El `frontend` de **machiatto** esta montado sobre componentes `Flet`, los cuales han sido construidos para representar modelos brindando vistas de tipo `Tabla-Formulario`. 
 
-Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Python3+`, olvidate de `HTML`, `CSS`, `JavaScript`, `SQL`, o algun otro lenguaje para la construccion de aplicaciones, con `Machiatto` tendras una caja de herramientas poderosa para la construcción de software empresarial.
+Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Python3+`, olvidate de `HTML`, `CSS`, `JavaScript`, `SQL`, o algun otro lenguaje para la construcción de aplicaciones, con `Machiatto` tendras una caja de herramientas poderosa para la construcción de software empresarial.
 
 ## Graphic User Interface
 
@@ -13,19 +13,19 @@ Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Py
 ![image](assets/images/login.png)
 ![image](assets/images/tablas.png)
 
-**Machiatto** & **PanCakesORM** trabajan en conjunto creando un componente `DatatableORM` ideal para el renderizado de modelos. `DatatableORM` permite vistas `tabla-formulario`, busquedas y dominios avanzados. Así mismo se considero la inyección de controladores `Flet` los cuales son interpretados por el componente al instanciar desde las `dataclasses` de `Machiatto Framework`.
+**Machiatto** & **PanCakesORM** trabajan en conjunto creando un componente `DatatableORM` ideal para el renderizado de modelos. `DatatableORM` permite vistas `tabla-formulario`, busquedas y dominios avanzados. Así mismo se consideró la inyección de controladores `Flet` los cuales son interpretados por el componente al instanciar desde las `dataclasses` de `Machiatto Framework`.
 
 ![image](assets/images/tabla-formulario.png)
 ![image](assets/images/busqueda.png)
 ![image](assets/images/dominios.png)
 
-## Inicion Rapido ☕
+## Inicion Rápido ☕
 
 ### Configuración
 
 _Suponiendo que se encuentra usted usando una distribución linux. De lo contrario hacer lo mismo usando los comandos de Windows._
 
-1. Activar entorno virtual
+1. Crear entorno virtual
 
 ```bash
 python3 -m venv .venv
@@ -43,7 +43,7 @@ source .venv/bin/activate
 pip install -r requirements/requirements.txt
 ```
 
-4. Utilizar un `.env` para las configuraciones globales de su proyecto (Mismas para PanCakesORM).
+4. Utilizar un `.env` para las configuraciones globales de sus proyectos.
 
 ```env
 # Solo Configuración Machiatto
@@ -55,7 +55,7 @@ ADMIN_EMAIL=ejemplo@gmail.com
 
 ### Jerarquia de directorios 🏗️ 
 
-**Machiatto** busca todos sus modulos dentro del directorio packages que trae por defecto este repositorio. Ademas tanto `.env` como la validacion de credenciales dependen del modulo pre-cargado `users`. Es vital mantener dicho modulo o de lo contrario ajustar para cualquier necesidad de desarrollo.
+**Machiatto** busca todos sus modulos dentro del directorio packages que trae por defecto este repositorio. Ademas tanto `.env` como la validación de credenciales dependen del modulo pre-cargado `users`. Es vital mantener dicho modulo o de lo contrario ajustar para cualquier necesidad de desarrollo.
 
 ```txt
 Machiatto
@@ -126,6 +126,6 @@ Indice: uso de fuentes en la interfaz.
 
 |Fuente|Tamaño|Elemento|
 |------|------|--------|
-|GeistMonoMedium|14|Botón|
-|GeistSansBlack|22|Alerta Titulo|
-|GeistSansRegular|14|Alerta Cuerpo|
+|**GeistMonoMedium**|14|Botón|
+|**GeistSansBlack**|22|Alerta Titulo|
+|**GeistSansRegular**|14|Alerta Cuerpo|
