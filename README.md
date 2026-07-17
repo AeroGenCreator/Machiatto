@@ -19,7 +19,15 @@ Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Py
 ![image](assets/images/busqueda.png)
 ![image](assets/images/dominios.png)
 
-## Inicion Rápido ☕
+### Índice Tipografía
+
+|Fuente|Tamaño|Elemento|
+|------|------|--------|
+|**GeistMonoMedium**|14|Botón|
+|**GeistSansBlack**|22|Alerta Titulo|
+|**GeistSansRegular**|14|Alerta Cuerpo|
+
+## Inicio Rápido ☕
 
 ### Configuración
 
@@ -119,13 +127,3 @@ PACKAGE = {
     ]
 }
 ```
-
-## GUI
-
-Indice: uso de fuentes en la interfaz.
-
-|Fuente|Tamaño|Elemento|
-|------|------|--------|
-|**GeistMonoMedium**|14|Botón|
-|**GeistSansBlack**|22|Alerta Titulo|
-|**GeistSansRegular**|14|Alerta Cuerpo|

@@ -179,8 +179,9 @@ class DatatableORM(ft.Column):
         """ Construye widget 'Desplegable' -> Selector de operador. """
         self.domain_select_operator = ft.Dropdown(
             menu_height=300,
-            width=700,
-            value=self.OPERATORS["same"],
+            width=500,
+            border_radius=10,
+            value=self.OPERATORS.get("same", ""),
             options=[
                 ft.DropdownOption(
                     key=exp,
@@ -322,8 +323,8 @@ class DatatableORM(ft.Column):
 
         # Se coloca en un contenedor flet (Para estilos).
         self.domain_datatype_container = ft.Container(
-            padding=2,
-            border_radius=10,
+            padding=20,
+            border_radius=15,
             content=self.datatype_selector_column,
             expand=True,
         )
@@ -377,8 +378,9 @@ class DatatableORM(ft.Column):
             ]
         if self.columns:
             self.domain_select_column = ft.Dropdown(
-                width=700,
+                width=500,
                 menu_height=300,
+                border_radius=10,
                 value=self.columns[0],
                 options=[
                     ft.DropdownOption(
@@ -582,7 +584,7 @@ class DatatableORM(ft.Column):
         """Contendor dinamico, vista formulario se monta en este contenedor"""
         self.sidebar_container = ft.Container(
             content=None,
-            bgcolor=ft.Colors.BLACK_12,
+            bgcolor=ft.Colors.SURFACE_CONTAINER_LOW,
             border_radius=10,
             padding=5,
             expand=1,
@@ -917,8 +919,8 @@ class DatatableORM(ft.Column):
             "2. Seleccione un operado de comparacion.\n"
             "3. Agregue el 'dato' o 'datos' de referencia en los "
             "deplegables.\n\n"
-            "Importante: El operador y el tipo de dato trabajan estrictamente en "
-            "conjunto segun la situacion. Ej. 'name', '=', 'Omar'. "
+            "El operador y el tipo de dato trabajan estrictamente en "
+            "conjunto segun la situacion. Ej: 'name', '=', 'Omar'."
         )
         self.alert.content = ft.Text(
             value=msg,
@@ -930,7 +932,7 @@ class DatatableORM(ft.Column):
         )
         if all(validate):
             # Se agrega un espaciado entre los controles del pop-up!
-            self.alert.actions_overflow_button_spacing = 10
+            self.alert.actions_overflow_button_spacing = 15
 
             # Se crea y agrega contenedor para selección de campos y operadores.
             self.domain_fields_operators_container = ft.Container(
@@ -939,12 +941,18 @@ class DatatableORM(ft.Column):
                     alignment=ft.MainAxisAlignment.CENTER,
                     controls=[
                         ft.Container(
+                            margin=20,
                             expand=True,
                             content=self.domain_select_column,
+                            bgcolor=ft.Colors.SURFACE_CONTAINER_LOWEST,
+                            border_radius=10
                         ),
                         ft.Container(
+                            margin=20,
                             expand=True,
                             content=self.domain_select_operator,
+                            bgcolor=ft.Colors.SURFACE_CONTAINER_LOWEST,
+                            border_radius=10
                         ),
                     ]
                 )
@@ -965,7 +973,13 @@ class DatatableORM(ft.Column):
                             icon=ft.Icons.MANAGE_SEARCH,
                         ),
                         ft.Button(
-                            content=ft.Text(value="Salir"),
+                            content=ft.Text(
+                                value="Salir",
+                                font_family="GeistMonoMedium",
+                                color=ft.Colors.WHITE,
+                            ),
+                            bgcolor=ft.Colors.RED_600,
+                            icon_color=ft.Colors.WHITE,
                             on_click=lambda self: self.page.pop_dialog(),
                             icon=ft.Icons.UNDO,
                         )
@@ -1048,6 +1062,11 @@ class DatatableORM(ft.Column):
             PIL = []  # Parsed integer list
 
             if isinstance(VL, list):
+
+                if len(VL) == 2 and OP == "btwn":
+                    query_avanzado(valores=VL)
+                    return
+
                 for item in VL:
                     result = re.search(self.FLOAT_EXPR, item)
                     if result:
@@ -1073,8 +1092,12 @@ class DatatableORM(ft.Column):
                     return
 
                 else:
-                    self.bad_domain(operator=OP)
-                    return
+                    try:
+                        query_avanzado(valores=VL)
+                        return
+                    except Exception:
+                        self.bad_domain(operator=OP)
+                        return
 
             else:
 
@@ -1098,28 +1121,38 @@ class DatatableORM(ft.Column):
     def bad_domain(self, operator):
         self.alert = ft.AlertDialog()
         self.alert.title = ft.Text(
-            color=ft.Colors.RED_600,
-            value="Uso Incorrecto de Operadores",
-            font_family="Barlow",
-            size=24,
+            value="¡Uso Incorrecto de Operadores!",
+            font_family="GeistSansBlack",
+            size=22,
         )
         msg = (
             "Se esta intentando aplicar dominio avanzado usando un operador "
             "no compatible con el tipo de dato o "
             "sin especificar ningun dato en absoluto. OP: "
-            f"{self.OPERATORS[operator]}. "
-            "Para completar su solicitu debe relacionar operadores "
-            "singulares con datos singulares. Ej. 'price', '>', '100'. "
+            f"'{self.OPERATORS[operator]}'. "
+            "Para completar su solicitu debe relacionar operadores.\n\n"
+            "Singulares con datos singulares. "
+            "Ej. price, >, 100.\n\n"
             "Iterables  con datos lista: "
-            "Ej. 'price', 'NOT IN', '[30, 40, 50]'. "
+            "Ej. price, NOT IN, [30, 40, 50].\n\n"
             "Rangos con 2 valores: "
-            "Ej. 'date', 'BETWEEN', [2026-01-01, 2026-02-01]."
+            "Ej. date, BETWEEN, [2026-01-01, 2026-02-01]."
         )
         self.alert.actions = ft.Button(
-            content=ft.Text("Cerrar"),
-            on_click=lambda self: self.page.pop_dialog()
+            content=ft.Text(
+                value="Cerrar",
+                color=ft.Colors.WHITE,
+                font_family="GeistMonoMedium",
+            ),
+            on_click=lambda self: self.page.pop_dialog(),
+            icon=ft.Icons.UNDO,
+            icon_color=ft.Colors.WHITE,
+            bgcolor=ft.Colors.RED_600,
         )
-        self.alert.content = ft.Text(value=msg, size=18, italic=False)
+        self.alert.content = ft.Text(
+            value=msg,
+            font_family="GeistSansRegular"
+        )
         self.alert.open = True
         self.page.show_dialog(self.alert)
 
@@ -1468,6 +1501,7 @@ class DatatableORM(ft.Column):
                         OPTIONS = []
 
                     component = ft.Dropdown(
+                        border_radius=10,
                         label=field_name,
                         key=position,
                         value=selection,
