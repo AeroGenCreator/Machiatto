@@ -84,18 +84,18 @@ A continuacion se ejemplifica el uso del manifest:
 
 ```python
 PACKAGE = {
-    "name": "inventory",  # Nombre del modulo.
-    "menu":  # Montar el modulo. (Barra de navegación lateral).
+    "name": "inventory",
+    "menu":
         {
         "label": "Inventario",
-        "path": "packages.inventory.views.items",
-        "icons": "all_inbox",
-        "function": "default"
+        "path": "packages.inventory.views.menus",
+        "icon": "all_inbox",
+        "function": "main"
         },
-    "container": {  # Vistas, ruta al fichero, "Callable" regresa una vista de flet.
-        "packages.inventory.views.items": ["inventory", "category"]
+    "container": {
+        "packages.inventory.views.menus": ["inventory", "category"]
         },
-    "models": [  # Los modelos de este modulo.
+    "models": [
         {
         "Inventory": "packages.inventory.models.inventory",
         "Category": "packages.inventory.models.category"
