@@ -39,6 +39,7 @@ from . import machiatto_dataclasses
 
 # ============================================================================
 
+
 def calculo_de_fecha():
     # datetime.now().astimezone() detecta automáticamente el offset del sistema
     fecha_local = datetime.datetime.now().astimezone()
@@ -81,12 +82,9 @@ class DatatableORM(ft.Column):
         self.advanced_domain = False
         self.search_bar = None
         self.custom_domain = ft.Button(
-            content=ft.Text(
-                value="Dominios",
-                font_family="GeistMonoMedium"
-            ),
+            content=ft.Text(value="Dominios", font_family="GeistMonoMedium"),
             key="custom_domain",
-            icon=ft.Icons.FILTER_LIST
+            icon=ft.Icons.FILTER_LIST,
         )
 
         self.this_row = None
@@ -106,11 +104,8 @@ class DatatableORM(ft.Column):
         self.form_controls = []
         self.alert = ft.AlertDialog()
         self.close_alert = ft.TextButton(
-            ft.Text(
-                value="Cerrar",
-                font_family="GeistMonoMedium"
-            ),
-            on_click=lambda e: self.page.pop_dialog()
+            ft.Text(value="Cerrar", font_family="GeistMonoMedium"),
+            on_click=lambda e: self.page.pop_dialog(),
         )
         self.domain_select_column: Optional[None | ft.Dropdown] = None
         self.model_labels = self.model._metadata[self.table]["comments"]
@@ -143,20 +138,15 @@ class DatatableORM(ft.Column):
             "is",
             "isnot",
             "like",
-            "notlike"
+            "notlike",
         }
 
-        self.ITER_OPERATORS = {
-            "in",
-            "notin"
-        }
+        self.ITER_OPERATORS = {"in", "notin"}
 
-        self.RANGE_OPERATORS = {
-            "btwn"
-        }
+        self.RANGE_OPERATORS = {"btwn"}
 
         self.FLOAT_EXPR = r"[0-9]+\.[0-9]+"
-        self.INTEGER_EXPR = r'[0-9]+'
+        self.INTEGER_EXPR = r"[0-9]+"
 
         # Metodos
         self._widget_operators_()
@@ -176,7 +166,7 @@ class DatatableORM(ft.Column):
 
     # === Metodos inicializacion ===
     def _widget_operators_(self):
-        """ Construye widget 'Desplegable' -> Selector de operador. """
+        """Construye widget 'Desplegable' -> Selector de operador."""
         self.domain_select_operator = ft.Dropdown(
             menu_height=300,
             width=500,
@@ -189,15 +179,14 @@ class DatatableORM(ft.Column):
                     trailing_icon=ft.Icons.COMPARE_ARROWS,
                 )
                 for exp, mean in self.OPERATORS.items()
-            ]
+            ],
         )
 
     def add_tags(self, e):
         """Agrega valores sobre una fila; Permite filtrar por iterables."""
         if self.tag_field.value:
             new_chip = ft.Chip(
-                label=self.tag_field.value.strip(),
-                on_delete=self.delete_chip
+                label=self.tag_field.value.strip(), on_delete=self.delete_chip
             )
             self.tags_container.content.controls.append(new_chip)
             self.tag_field.value = ""
@@ -222,9 +211,9 @@ class DatatableORM(ft.Column):
         self.singular_input = ft.TextField(value="")
         self.SINGULAR = ft.ExpansionPanel(
             can_tap_header=True,
-            header=ft.ListTile(title=ft.Text(
-                    value="Solo un valor.",
-                    font_family="GeistMonoMedium"
+            header=ft.ListTile(
+                title=ft.Text(
+                    value="Solo un valor.", font_family="GeistMonoMedium"
                 )
             ),
             content=ft.Container(
@@ -232,9 +221,9 @@ class DatatableORM(ft.Column):
                 padding=10,
                 content=ft.Row(
                     alignment=ft.MainAxisAlignment.START,
-                    controls=[self.singular_input]
+                    controls=[self.singular_input],
                 ),
-            )
+            ),
         )
 
         # === ITERABLES ===
@@ -243,12 +232,7 @@ class DatatableORM(ft.Column):
         # Fila que aloja etiquetas de valores.
         self.tags_container = ft.Container(
             expand=True,
-            content=ft.Row(
-                wrap=True,
-                spacing=8,
-                run_spacing=8,
-                controls=[]
-            )
+            content=ft.Row(wrap=True, spacing=8, run_spacing=8, controls=[]),
         )
 
         # Aloja los desplegables; (3 opciones)
@@ -262,8 +246,7 @@ class DatatableORM(ft.Column):
             can_tap_header=True,
             header=ft.ListTile(
                 title=ft.Text(
-                    value="Lista de valores.",
-                    font_family="GeistMonoMedium"
+                    value="Lista de valores.", font_family="GeistMonoMedium"
                 )
             ),
             content=ft.Container(
@@ -277,15 +260,14 @@ class DatatableORM(ft.Column):
                             controls=[
                                 self.tag_field,
                                 ft.IconButton(
-                                    icon=ft.Icons.ADD,
-                                    on_click=self.add_tags
+                                    icon=ft.Icons.ADD, on_click=self.add_tags
                                 ),
-                            ]
+                            ],
                         ),
-                        self.tags_container
-                    ]
-                )
-            )
+                        self.tags_container,
+                    ],
+                ),
+            ),
         )
 
         # === RANGOS ===
@@ -295,8 +277,7 @@ class DatatableORM(ft.Column):
             can_tap_header=True,
             header=ft.ListTile(
                 title=ft.Text(
-                    value="Rango de 2 valores.",
-                    font_family="GeistMonoMedium"
+                    value="Rango de 2 valores.", font_family="GeistMonoMedium"
                 )
             ),
             content=ft.Container(
@@ -304,11 +285,9 @@ class DatatableORM(ft.Column):
                 expand=True,
                 content=ft.Row(
                     alignment=ft.MainAxisAlignment.START,
-                    controls=[
-                        self.first_range, self.second_range
-                    ]
-                )
-            )
+                    controls=[self.first_range, self.second_range],
+                ),
+            ),
         )
 
         # Asignacion al componente desplegable de lista
@@ -349,8 +328,7 @@ class DatatableORM(ft.Column):
             )
         elif self.advanced_domain:
             self.container = (
-                self.model
-                .chunk(**self.chunk)
+                self.model.chunk(**self.chunk)
                 .filter(**self.advanced_domain)
                 .all()
                 .container()
@@ -386,10 +364,10 @@ class DatatableORM(ft.Column):
                     ft.DropdownOption(
                         key=col,
                         text=self.model_labels[i],
-                        trailing_icon=ft.Icons.VIEW_COLUMN
+                        trailing_icon=ft.Icons.VIEW_COLUMN,
                     )
                     for i, col in enumerate(self.columns)
-                ]
+                ],
             )
 
     def _construct_flet_rows_(self) -> None:
@@ -490,6 +468,9 @@ class DatatableORM(ft.Column):
             view_hint_text="Escribir nombre de registro...",
             on_change=self.handle_search_bar_change,
             on_tap=self._handle_search_bar_tap_,
+            bar_size_constraints=ft.BoxConstraints(
+                min_width=300, max_width=350, min_height=35, max_height=35
+            ),
         )
 
     def _header_container_widget_(self) -> None:
@@ -532,20 +513,23 @@ class DatatableORM(ft.Column):
 
     def _create_entry_widget_(self) -> None:
         """Boton de nuevo registro, genera instancia de formulario vacio"""
-        self.create_entry_container = ft.Container(
-            content=ft.Row(
-                controls=[
-                    ft.Button(
-                        content=ft.Text(
-                            value="Agregar Registro",
-                            font_family="GeistMonoMedium",
-                        ),
-                        on_click=lambda e: self.create_entry(e),
-                        icon=ft.Icons.ADD,
-                    )
-                ]
+        self.top_container.content.controls.insert(
+            -1,
+            ft.Container(
+                content=ft.Row(
+                    controls=[
+                        ft.Button(
+                            content=ft.Text(
+                                value="Agregar",
+                                font_family="GeistMonoMedium",
+                            ),
+                            on_click=lambda e: self.create_entry(e),
+                            icon=ft.Icons.ADD,
+                        )
+                    ]
+                ),
+                expand=1,
             ),
-            expand=2,
         )
 
     def _table_widget_(self):
@@ -566,8 +550,7 @@ class DatatableORM(ft.Column):
             content=ft.ListView(
                 controls=[
                     ft.Row(
-                        controls=[self.datatable],
-                        scroll=ft.ScrollMode.ADAPTIVE
+                        controls=[self.datatable], scroll=ft.ScrollMode.ADAPTIVE
                     )
                 ],
                 expand=True,
@@ -671,21 +654,16 @@ class DatatableORM(ft.Column):
             self.this_row = None
             self.this_index = "IDxxx1"
             self.response = ""
-            self.sidebar_container.visible = (
-                not self.sidebar_container.visible
-            )
+            self.sidebar_container.visible = not self.sidebar_container.visible
             self.sidebar_container.content = None
         else:
             e.control.selected = not e.control.selected
-            self.sidebar_container.visible = (
-                not self.sidebar_container.visible
-            )
+            self.sidebar_container.visible = not self.sidebar_container.visible
             current_row = [v.content.value for v in e.control.cells]
             update_data = dict(zip(self.columns, current_row))
             self.form(update_data=update_data)
             self.sidebar_container.content = self.form_widget
         self.update()
-
 
     def save_changes(self, e, update=False) -> None:
         # Status Barra lateral
@@ -697,7 +675,6 @@ class DatatableORM(ft.Column):
         data = {}
         timestamp = {}
         for field in self.form_controls:
-
             # key -> metada [datetime][tabla, col, posicion & validacion]:
             PARTS = field.key.split("__")
 
@@ -758,10 +735,7 @@ class DatatableORM(ft.Column):
                 if TYPE == "FOREIGN KEY" and value is not None:
                     domain = {f"{REFERENCES}__{NAME}__same": value}
                     row, col = (
-                        NEW_MODEL.
-                        filter(**domain)
-                        .all(ids=True)
-                        .raw(align=True)
+                        NEW_MODEL.filter(**domain).all(ids=True).raw(align=True)
                     )
 
                     if row:
@@ -819,7 +793,7 @@ class DatatableORM(ft.Column):
                 self.alert.actions = [
                     ft.Button(
                         content=ft.Text(value="Cerrar"),
-                        on_click=lambda self: self.page.pop_dialog()
+                        on_click=lambda self: self.page.pop_dialog(),
                     )
                 ]
                 self.page.show_dialog(self.alert)
@@ -831,7 +805,7 @@ class DatatableORM(ft.Column):
                 self.alert.actions = [
                     ft.Button(
                         content=ft.Text(value="Cerrar"),
-                        on_click=lambda self: self.page.pop_dialog()
+                        on_click=lambda self: self.page.pop_dialog(),
                     )
                 ]
                 self.page.show_dialog(self.alert)
@@ -850,7 +824,7 @@ class DatatableORM(ft.Column):
                 self.alert.actions = [
                     ft.Button(
                         content=ft.Text(value="Cerrar"),
-                        on_click=lambda self: self.page.pop_dialog()
+                        on_click=lambda self: self.page.pop_dialog(),
                     )
                 ]
                 self.page.show_dialog(self.alert)
@@ -862,7 +836,7 @@ class DatatableORM(ft.Column):
                 self.alert.actions = [
                     ft.Button(
                         content=ft.Text(value="Cerrar"),
-                        on_click=lambda self: self.page.pop_dialog()
+                        on_click=lambda self: self.page.pop_dialog(),
                     )
                 ]
                 self.page.show_dialog(self.alert)
@@ -910,9 +884,7 @@ class DatatableORM(ft.Column):
         self.alert = ft.AlertDialog()
         self._widget_singular_iterable_range_()
         self.alert.title = ft.Text(
-            value="Dominios Avanzados",
-            font_family="GeistSansBlack",
-            size=22
+            value="Dominios Avanzados", font_family="GeistSansBlack", size=22
         )
         msg = (
             "1. Especifique el campo por el cual desea hacer el filtro.\n"
@@ -922,13 +894,10 @@ class DatatableORM(ft.Column):
             "El operador y el tipo de dato trabajan estrictamente en "
             "conjunto segun la situacion. Ej: 'name', '=', 'Omar'."
         )
-        self.alert.content = ft.Text(
-            value=msg,
-            font_family="GeistSansRegular"
-        )
+        self.alert.content = ft.Text(value=msg, font_family="GeistSansRegular")
         validate = (
             (self.domain_select_column is not None),
-            (self.domain_select_operator is not None)
+            (self.domain_select_operator is not None),
         )
         if all(validate):
             # Se agrega un espaciado entre los controles del pop-up!
@@ -944,18 +913,16 @@ class DatatableORM(ft.Column):
                             margin=20,
                             expand=True,
                             content=self.domain_select_column,
-                            bgcolor=ft.Colors.SURFACE_CONTAINER_LOWEST,
-                            border_radius=10
+                            border_radius=10,
                         ),
                         ft.Container(
                             margin=20,
                             expand=True,
                             content=self.domain_select_operator,
-                            bgcolor=ft.Colors.SURFACE_CONTAINER_LOWEST,
-                            border_radius=10
+                            border_radius=10,
                         ),
-                    ]
-                )
+                    ],
+                ),
             )
             self.alert.actions.insert(0, self.domain_fields_operators_container)
 
@@ -982,11 +949,11 @@ class DatatableORM(ft.Column):
                             icon_color=ft.Colors.WHITE,
                             on_click=lambda self: self.page.pop_dialog(),
                             icon=ft.Icons.UNDO,
-                        )
+                        ),
                     ],
                     alignment=ft.MainAxisAlignment.END,
-                    tight=True
-                )
+                    tight=True,
+                ),
             )
             self.alert.actions.append(self.domain_buttons_container)
 
@@ -1019,11 +986,14 @@ class DatatableORM(ft.Column):
 
         validate_field_operator = (
             (self.domain_select_column.value),
-            (self.domain_select_operator.value)
+            (self.domain_select_operator.value),
         )
         if all(validate_field_operator):
             FD = self.domain_select_column.value
-            OP = self.domain_select_operator.value
+            OP = (
+                self.domain_select_operator.value if self
+                .domain_select_operator.value != "=" else "same"
+            )
             VL = ""
 
             if OP in self.SG_OPERATORS:
@@ -1044,7 +1014,8 @@ class DatatableORM(ft.Column):
 
             elif OP in self.RANGE_OPERATORS:
                 validate_range = (
-                    (self.first_range.value), (self.second_range.value)
+                    (self.first_range.value),
+                    (self.second_range.value),
                 )
                 if all(validate_range):
                     VL = [self.first_range.value, self.second_range.value]
@@ -1062,7 +1033,6 @@ class DatatableORM(ft.Column):
             PIL = []  # Parsed integer list
 
             if isinstance(VL, list):
-
                 if len(VL) == 2 and OP == "btwn":
                     query_avanzado(valores=VL)
                     return
@@ -1100,12 +1070,11 @@ class DatatableORM(ft.Column):
                         return
 
             else:
-
                 es_float = re.search(self.FLOAT_EXPR, VL)
                 if es_float:
                     if es_float.group() == VL:
-                     query_avanzado(valores=float(VL))
-                     return
+                        query_avanzado(valores=float(VL))
+                        return
 
                 es_integer = re.search(self.INTEGER_EXPR, VL)
                 if es_integer:
@@ -1149,10 +1118,7 @@ class DatatableORM(ft.Column):
             icon_color=ft.Colors.WHITE,
             bgcolor=ft.Colors.RED_600,
         )
-        self.alert.content = ft.Text(
-            value=msg,
-            font_family="GeistSansRegular"
-        )
+        self.alert.content = ft.Text(value=msg, font_family="GeistSansRegular")
         self.alert.open = True
         self.page.show_dialog(self.alert)
 
@@ -1168,18 +1134,12 @@ class DatatableORM(ft.Column):
             "cualquier tipo de respaldo futuro."
         )
         accept = ft.Button(
-            content=ft.Text(
-                value="Aceptar",
-                font_family="GeistMonoMedium"
-            ),
+            content=ft.Text(value="Aceptar", font_family="GeistMonoMedium"),
             on_click=self.delete_entry,
             bgcolor=ft.Colors.RED_600,
             color=ft.Colors.WHITE,
         )
-        self.alert.content = ft.Text(
-            value=msg,
-            font_family="GeistSansRegular"
-        )
+        self.alert.content = ft.Text(value=msg, font_family="GeistSansRegular")
         self.alert.actions = [accept]
         self.alert.open = True
         self.page.show_dialog(self.alert)
@@ -1232,19 +1192,16 @@ class DatatableORM(ft.Column):
             "Algún otro error - restricción a nivel SQL puede ser el culpable. "
             "Se recomienda revisar función 'delete_entry'."
         )
-        self.alert.content = ft.Text(
-            value=msg,
-            font_family="GeistSansRegular"
-        )
+        self.alert.content = ft.Text(value=msg, font_family="GeistSansRegular")
         self.alert.actions = [
             ft.Button(
                 bgcolor=ft.Colors.RED_600,
                 content=ft.Text(
                     value="Cerrar",
                     font_family="GeistMonoMedium",
-                    color=ft.Colors.WHITE
+                    color=ft.Colors.WHITE,
                 ),
-                on_click=lambda self: self.page.pop_dialog()
+                on_click=lambda self: self.page.pop_dialog(),
             )
         ]
         self.alert.open = True
@@ -1266,7 +1223,8 @@ class DatatableORM(ft.Column):
             content=ft.Text(
                 value="Vista Formulario",
                 font_family="GeistSansBlack",
-                size=22
+                size=22,
+                text_align=ft.MainAxisAlignment.CENTER,
             )
         )
 
@@ -1522,29 +1480,28 @@ class DatatableORM(ft.Column):
         # Estetica: Boton "Guardar" y "Eliminar" siempre al comienzo.
         form_header = ft.Row()
         save_button = ft.Button(
-                content=ft.Text(
-                    value="Guardar Cambios",
-                    font_family="GeistMonoMedium"
-                ),
-                key="save",
-                icon=ft.Icons.SAVE,
-                on_click=lambda e: self.save_changes(e, update=UPDATE),
-            )
+            content=ft.Text(
+                value="Guardar Cambios", font_family="GeistMonoMedium"
+            ),
+            key="save",
+            icon=ft.Icons.SAVE,
+            on_click=lambda e: self.save_changes(e, update=UPDATE),
+        )
 
         delete_button = ft.Button(
-                content=ft.Text(
-                    color=ft.Colors.WHITE,
-                    value="Eliminar Registro",
-                    font_family="GeistMonoMedium",
-                ),
-                key="delete",
-                bgcolor=ft.Colors.RED_600,
-                icon=ft.Icons.DELETE,
-                icon_color=ft.Colors.WHITE,
-                on_click=self.accept_changes,
-            )
+            content=ft.Text(
+                color=ft.Colors.WHITE,
+                value="Eliminar Registro",
+                font_family="GeistMonoMedium",
+            ),
+            key="delete",
+            bgcolor=ft.Colors.RED_600,
+            icon=ft.Icons.DELETE,
+            icon_color=ft.Colors.WHITE,
+            on_click=self.accept_changes,
+        )
         form_header.controls = [save_button, delete_button]
-        controls.insert(0,form_header)
+        controls.insert(0, form_header)
 
         # RENDERIZA DINAMICO 1:N SOBRE UN CONTENEDOR CON SCROLLIN.
         # AUN EN CONSTRUCCIÓN
@@ -1552,45 +1509,49 @@ class DatatableORM(ft.Column):
             value = v["metadata"]["sql_type"]
             if value == ONE2MANY:
                 COL_SCHEMA = [f._schema for f in MODEL._fields if f._name == k]
+                NAME = [f._name for f in MODEL._fields if f._name == k]
                 # Con el esquema se puede acceder a la segunda tabla.
                 # Con lasegunda tabla se puede acceder al modelo.
                 # Crear un objeto renderizado de (Tablas) para campos 1:N
                 # No se puede este mismo porque va a generar circular reference.
+                # Idea boton que llame a su modelo y cargue vista Tabla
                 controls.append(
-                    ft.TextField(
-                        value=COL_SCHEMA, key=f"1:M{str(uuid.uuid4())}"
+                    ft.Button(
+                        content=ft.Text(
+                            value=NAME[0],
+                            font_family="GeistMonoMedium",
+                        ),
+                        icon=ft.Icons.HUB,
+                        on_click=None,
                     )
                 )
 
         # Construcción de elementos en la GUI personalizados.
         if self.controllers:
             for OBJECT in self.controllers:
-
                 if isinstance(
-                    OBJECT, (
+                    OBJECT,
+                    (
                         machiatto_dataclasses.ButtonItem,
                         machiatto_dataclasses.InputField,
-                    )
+                    ),
                 ):
-
                     # Renderizado: Boton Personalizado.
                     if isinstance(OBJECT, machiatto_dataclasses.ButtonItem):
                         string = OBJECT.string or ""
                         controls.append(
                             ft.Button(
                                 content=ft.Text(
-                                    value=string,
-                                    font_family="GeistMonoMedium"
+                                    value=string, font_family="GeistMonoMedium"
                                 ),
                                 on_click=partial(OBJECT.function, self),
-                                key="developer_controller"
+                                key="developer_controller",
                             )
                         )
                     if isinstance(OBJECT, machiatto_dataclasses.InputField):
                         VALUE = ft.Text(OBJECT.value) if OBJECT.value else None
                         RESPONSE = ft.TextField(
-                            label=ft.Text(OBJECT.string) or None,
-                            value=VALUE
+                            label=ft.Text(OBJECT.string) or None, value=VALUE
                         )
                         controls.append(
                             ft.Container(
@@ -1602,18 +1563,19 @@ class DatatableORM(ft.Column):
                                         ft.Button(
                                             content=ft.Text(
                                                 value="Enviar",
-                                                font_family="GeistMonoMedium"
+                                                font_family="GeistMonoMedium",
                                             ),
                                             icon=ft.Icons.CHECK,
-                                            on_click=lambda e, res=RESPONSE:
+                                            on_click=lambda e, res=RESPONSE: (
                                                 self.send_response(
-                                                e,
-                                                response=res,
-                                                function=OBJECT.function
-                                            )
+                                                    e,
+                                                    response=res,
+                                                    function=OBJECT.function,
+                                                )
+                                            ),
                                         ),
                                     ]
-                                )
+                                ),
                             )
                         )
 
@@ -1647,7 +1609,7 @@ class DatatableORM(ft.Column):
 
     # === GUARDADO CONTROLADORES PERSONALIZADOS ===
     def ensure_store(self) -> None:
-        """ Para cualquier controlador personalizado, lo primero
+        """Para cualquier controlador personalizado, lo primero
         que se debe hacer es asegurar el guardado para obtener el 'id'."""
         if self.this_index is not None and self.this_index != "IDxxx1":
             self.save_changes(e=self.this_row, update=True)
@@ -1681,7 +1643,7 @@ class DatatableORM(ft.Column):
     # === CAPA SUPERIOR; MONTAR WIDGETS ===
     def _layout_(self) -> None:
         header = ft.Row(
-            controls=[self.top_container, self.create_entry_container],
+            controls=[self.top_container],
             expand=1,
         )
         content = ft.Row(

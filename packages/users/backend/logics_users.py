@@ -13,11 +13,12 @@ from ..models.users import Users
 def validar_correo(self) -> None:
 
     self.ensure_store()
+    answer = self.response if self.response is not None else ""
     regex = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}"
-    if re.fullmatch(regex, self.response):
+    if re.fullmatch(regex, answer) or answer == "":
         kw = {
             f"{self.table}__{self.columns[2]}__{self.columns[0]}__same":
-            [self.response, self.this_index]
+            [answer, self.this_index]
         }
         try:
             self.model.u(**kw)
@@ -37,17 +38,28 @@ def validar_correo(self) -> None:
     else:
         self.page.show_dialog(
             ft.AlertDialog(
-                title=ft.Text("No se completo la operación"),
+                title=ft.Text(
+                    value="No se completo la operación",
+                    font_family="GeistSansBlack",
+                    size=22,
+                ),
                 content=ft.Text(
                     (
-                        "Correo invalido. Para registro con id: "
-                        f"'{self.this_index}'."
+                        f"Correo invalido '{answer}''. Para registro con id "
+                        f"{self.this_index}. Ejemplo valido: "
+                        "ejemplo@gmail.com."
                     )
                 ),
                 actions=[
                     ft.Button(
-                        content=ft.Text("Cerrar"),
-                        on_click=lambda self: self.page.pop_dialog()
+                        content=ft.Text(
+                            value="Cerrar",
+                            color=ft.Colors.WHITE,
+                        ),
+                        on_click=lambda self: self.page.pop_dialog(),
+                        icon=ft.Icons.UNDO,
+                        icon_color=ft.Colors.WHITE,
+                        bgcolor=ft.Colors.RED_600
                     )
                 ]
             )

@@ -19,13 +19,14 @@ Es debido a todo lo anterior que `Machiatto Framework` requiere puramente de `Py
 ![image](assets/images/busqueda.png)
 ![image](assets/images/dominios.png)
 
-### Índice Tipografía
+### Índice de Tipografía
 
 |Fuente|Tamaño|Elemento|
 |------|------|--------|
 |**GeistMonoMedium**|14|Botón|
 |**GeistSansBlack**|22|Alerta Titulo|
 |**GeistSansRegular**|14|Alerta Cuerpo|
+|**GeistSansRegular**|14|Fuente por defecto|
 
 ## Inicio Rápido ☕
 
@@ -61,32 +62,7 @@ ADMIN_PASSWORD=admin
 ADMIN_EMAIL=ejemplo@gmail.com
 ```
 
-### Jerarquia de directorios 🏗️ 
-
 **Machiatto** busca todos sus modulos dentro del directorio packages que trae por defecto este repositorio. Ademas tanto `.env` como la validación de credenciales dependen del modulo pre-cargado `users`. Es vital mantener dicho modulo o de lo contrario ajustar para cualquier necesidad de desarrollo.
-
-```txt
-Machiatto
-├── assets
-│   ├── banner.png
-│   └── images/
-│       └── pictures...
-├── machiatto
-│   ├── datatable_orm.py # Componente vista-formulario
-│   ├── machiatto_dataclasses.py # Controladores Personalizados Disponibles
-│   ├── machiatto_gear.py # Construye el shell de la aplicación
-│   └── package_loader.py # Carga de modulos e importacion de modelos.
-├── packages
-│   └── user/
-│       ├── backend/ # Construcción de logica y componentes
-│       ├── models/ # Modelos PanCakesORM
-│       ├── views/ # Montar vistas
-│       └── __manifest__.py
-├── README.md
-└── requirements/
-    ├── requirements.txt # Obligatorio para el funcionamiento
-    └── requirements-dev.txt # Solo para desarrollo
-```
 
 ### Modulos
 
@@ -126,4 +102,29 @@ PACKAGE = {
         },
     ]
 }
+```
+
+### Jerarquia de directorios 🏗️ 
+
+```txt
+Machiatto
+├── assets
+│   ├── banner.png
+│   └── images/
+│       └── pictures...
+├── machiatto
+│   ├── datatable_orm.py # Componente vista-formulario
+│   ├── machiatto_dataclasses.py # Controladores Personalizados Disponibles
+│   ├── machiatto_gear.py # Construye el shell de la aplicación
+│   └── package_loader.py # Carga de modulos e importacion de modelos.
+├── packages
+│   └── user/
+│       ├── backend/ # Construcción de logica y componentes
+│       ├── models/ # Modelos PanCakesORM
+│       ├── views/ # Montar vistas
+│       └── __manifest__.py
+├── README.md
+└── requirements/
+    ├── requirements.txt # Obligatorio para el funcionamiento
+    └── requirements-dev.txt # Solo para desarrollo
 ```
