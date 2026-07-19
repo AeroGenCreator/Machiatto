@@ -36,6 +36,7 @@ from pancakes.models.model import PanCakesORM
 from pydantic import ValidationError
 
 from . import machiatto_dataclasses
+from .machiatto_one2many import DatatableOne2Many
 
 # ============================================================================
 
@@ -87,6 +88,7 @@ class DatatableORM(ft.Column):
             icon=ft.Icons.FILTER_LIST,
         )
 
+        self.one2many_dialog = ft.AlertDialog()
         self.this_row = None
         self.this_index = "IDxxx1"
         self.name_domain = False
@@ -991,8 +993,9 @@ class DatatableORM(ft.Column):
         if all(validate_field_operator):
             FD = self.domain_select_column.value
             OP = (
-                self.domain_select_operator.value if self
-                .domain_select_operator.value != "=" else "same"
+                self.domain_select_operator.value
+                if self.domain_select_operator.value != "="
+                else "same"
             )
             VL = ""
 
@@ -1508,21 +1511,20 @@ class DatatableORM(ft.Column):
         for k, v in MODEL.schema.items():
             value = v["metadata"]["sql_type"]
             if value == ONE2MANY:
-                COL_SCHEMA = [f._schema for f in MODEL._fields if f._name == k]
-                NAME = [f._name for f in MODEL._fields if f._name == k]
-                # Con el esquema se puede acceder a la segunda tabla.
-                # Con lasegunda tabla se puede acceder al modelo.
-                # Crear un objeto renderizado de (Tablas) para campos 1:N
-                # No se puede este mismo porque va a generar circular reference.
-                # Idea boton que llame a su modelo y cargue vista Tabla
+                CHART = [f._schema for f in MODEL._fields if f._name == k]
+                NAME = CHART[0]["metadata"]["foreign_key"]["second_table"]
+                cleanName = NAME.upper()
+                if "_" in NAME:
+                    cleanName = " ".join(NAME.split("_"))
                 controls.append(
                     ft.Button(
                         content=ft.Text(
-                            value=NAME[0],
+                            value=cleanName,
                             font_family="GeistMonoMedium",
                         ),
                         icon=ft.Icons.HUB,
-                        on_click=None,
+                        on_click=self._handle_one2many_,
+                        key=NAME,
                     )
                 )
 
@@ -1639,6 +1641,32 @@ class DatatableORM(ft.Column):
         self._vector_length_()
         self.datatable.rows = self.flet_rows
         self.update()
+
+    # === Manejar Eventos One2Many ===
+    def _handle_one2many_(self, e):
+        name = e.control.key
+        label = e.control.content.value
+        model = self.model._family[name]
+        self.one2many_dialog = ft.AlertDialog()
+        self.one2many_dialog.title = ft.Text(
+            value=label, font_family="GeistSansBlack", size=22
+        )
+        self.one2many_dialog.content=DatatableOne2Many(
+            model=model, pagina=self.page
+        )
+        self.one2many_dialog.actions=[
+            ft.Button(
+                content=ft.Text(
+                    value="Salir",
+                    color=ft.Colors.WHITE
+                ),
+                icon=ft.Icons.UNDO,
+                icon_color=ft.Colors.WHITE,
+                bgcolor=ft.Colors.RED_600,
+                on_click=lambda self: self.page.pop_dialog()
+            )
+        ]
+        self.page.show_dialog(self.one2many_dialog)
 
     # === CAPA SUPERIOR; MONTAR WIDGETS ===
     def _layout_(self) -> None:
