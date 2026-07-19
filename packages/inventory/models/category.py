@@ -10,7 +10,7 @@ class Category(PanCakesORM):
     _depends = "self"
 
     # === MODELO CAMPOS ===
-    
+
     name = datatype.Char(comment="Nombre Categoria", required=True, unique=True)
     activo = datatype.Bool(comment="Activo")
     inventory_ids = datatype.One2Many(
