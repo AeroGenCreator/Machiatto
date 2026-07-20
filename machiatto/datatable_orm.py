@@ -1030,7 +1030,6 @@ class DatatableORM(ft.Column):
                 return
 
             # Conversion de datos segun su coincidencia con patron caracteres.
-            # import ipdb; ipdb.set_trace()
 
             PFL = []  # Parsed float list
             PIL = []  # Parsed integer list
@@ -1644,6 +1643,7 @@ class DatatableORM(ft.Column):
 
     # === Manejar Eventos One2Many ===
     def _handle_one2many_(self, e):
+        reference = self.this_row.control.cells[0].content.value
         name = e.control.key
         label = e.control.content.value
         model = self.model._family[name]
@@ -1651,19 +1651,19 @@ class DatatableORM(ft.Column):
         self.one2many_dialog.title = ft.Text(
             value=label, font_family="GeistSansBlack", size=22
         )
-        self.one2many_dialog.content=DatatableOne2Many(
-            model=model, pagina=self.page
+        self.one2many_dialog.content = DatatableOne2Many(
+            model=model,
+            pagina=self.page,
+            second_table=self.table,
+            reference=int(reference),
         )
-        self.one2many_dialog.actions=[
+        self.one2many_dialog.actions = [
             ft.Button(
-                content=ft.Text(
-                    value="Salir",
-                    color=ft.Colors.WHITE
-                ),
+                content=ft.Text(value="Salir", color=ft.Colors.WHITE),
                 icon=ft.Icons.UNDO,
                 icon_color=ft.Colors.WHITE,
                 bgcolor=ft.Colors.RED_600,
-                on_click=lambda self: self.page.pop_dialog()
+                on_click=lambda self: self.page.pop_dialog(),
             )
         ]
         self.page.show_dialog(self.one2many_dialog)
