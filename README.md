@@ -56,7 +56,7 @@ Sí se esta trabajando en un `Docker Python` no es necesaria la configuracion de
 pip install -r requirements/requirements.txt
 ```
 
-4. Utilizar un `.env` para las configuraciones globales de sus proyectos.
+4. Utilizar un `.env` para las configuraciones globales del proyecto.
 
 ```env
 # Minima configuracion:
@@ -106,8 +106,8 @@ flet run --web --port 8000 app.py
 
 ### Adicionales de Despliegue
 
-[Aplicación Flet Web](https://flet.dev/docs/publish/web/dynamic-website/)
-[Variables de Entorno Flet Web](https://flet.dev/docs/reference/environment-variables)
+- [Aplicación Flet Web](https://flet.dev/docs/publish/web/dynamic-website/)
+- [Variables de Entorno Flet Web](https://flet.dev/docs/reference/environment-variables)
 
 ### Para desarrollo
 
