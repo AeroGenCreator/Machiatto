@@ -47,6 +47,9 @@ if [ -n "$ADMIN" ] && \
 			Las credenciales estan congifuradas correctamente... 🔐"
 		fi
 		echo -e "Accesos correctos en la base de datos... ✅"
+        echo -e "
+        Machiatto puede ser ejecutado con confianza... ☕
+        "
 	else
 		echo -e "No se pudo construir la base de datos. 
 		Si sqlite3 no esta instaldo en su sistema puede instalarlo con 
@@ -61,6 +64,3 @@ else
 # Desactiva la exportación automática
 set +o allexport
 fi
-echo -e "
-Machiatto puede ser ejecutado con confianza... ☕
-"
