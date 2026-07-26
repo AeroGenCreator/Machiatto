@@ -18,6 +18,8 @@
 # ============================================================================
 
 # ============================================================================
+import os
+
 # Modulos
 import flet as ft
 
@@ -26,6 +28,8 @@ from machiatto.package_loader import load_models, mapper, read_manifest
 
 # ============================================================================
 
+# 0. Asegurar que se carguen cursores GTK/GNOME
+os.environ["GDK_BACKEND"] = "x11"
 # 1. Lectura de directorio 'packages'.
 container_items, sidebar_buttons, dynamic_models = read_manifest()
 # 2. Carga de todos los modelos declarados en el maniest
@@ -46,42 +50,23 @@ FUENTES = {
     "GeistMonoItalic": "fonts/geist_mono/GeistMono-Italic.ttf",
 }
 
-
-# Contenedor Maestro
-class MainContainer(ft.Container):
-    """
-    Contendor padre de la apliacion
-    Engloba el cascaron de vistas construido
-    para 'Machiato' framework.
-    """
-    def __init__(self, content):
-        super().__init__()
-        self.border_radius = 10
-        self.padding = 10
-        self.expand=True
-        self.content = content
-        self.update()
-
-
 def main(page: ft.Page):
     """
     Ejecución principal de flet.
     1. Definición 'Pagina'.
-    2. Monta 'MainContainer' en 'Pagina'.
+    2. Monta 'Shell' en 'Pagina'.
     """
+    page.title = "Macchiato"
     page.fonts = FUENTES
-
     page.theme = ft.Theme(
         font_family="GeistSansRegular",
         color_scheme_seed=ft.Colors.AMBER
     )
-    page.dark_theme = ft.Theme(color_scheme_seed=ft.Colors.AMBER)
-    page.title = "Macchiato"
-    page.window.width = 1080
-    page.window.height = 720
+    page.dark_theme = ft.Theme(
+        font_family="GeistSansRegular",
+        color_scheme_seed=ft.Colors.AMBER)
 
     shell = MainGear(modulos=modulos, pagina=page)
-
     page.add(shell)
 
 if __name__ == "__main__":

@@ -35,10 +35,12 @@ from pathlib import Path
 # Por el momento ruta estatica 'packages'.
 # Constantes: Ruta / Keywords
 IMPORT_COMPLEMENT = "packages"
-PATH = Path.cwd() / IMPORT_COMPLEMENT
+ROOT = "Machiatto"
+CURRENT_DIRECTORY = Path.cwd()
+MAIN_PATH = str(CURRENT_DIRECTORY).split(ROOT)[0]
+PATH = Path(MAIN_PATH) / Path(ROOT) / IMPORT_COMPLEMENT
 MANIFEST_KEY_WORD = "__manifest__.py"
 METADATA_KEY_WORD = "PACKAGE"
-
 
 def read_manifest(path=PATH):
 

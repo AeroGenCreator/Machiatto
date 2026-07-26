@@ -13,3 +13,6 @@ __pycache__/
 
 # Data
 ./data
+
+# Data
+./.flet
