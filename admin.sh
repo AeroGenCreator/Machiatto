@@ -6,24 +6,26 @@ echo -e "Configurando accesos administrador... 📦"
 set -o allexport
 source .env
 
+# Asegurarse de que todas las variables de entorno minimas esten declaradas.
 if [ -n "$ADMIN" ] && \
 	[ -n "$ADMIN_PASSWORD" ] && \
 	[ -n "$ADMIN_EMAIL" ] && \
 	[ -n "$DB_DIR" ] && \
-	[ -n "$DB_FILE" ]; then
+	[ -n "$DB_FILE" ] && \
+    [ -n "$FLET_APP_STORAGE_DATA" ]; then
 	
 	if sqlite3 --version 2>&1; then
 		
 		echo -e "Resolviendo las rutas... 🔦"
 		
-		mkdir -p ./.flet/storage/data/${DB_DIR}
-		touch ./.flet/storage/data/${DB_DIR}/${DB_FILE}
+		mkdir -p ./${DB_DIR}
+		touch ./${DB_DIR}/${DB_FILE}
 		
 		echo -e "
-		Evaluando en './.flet/storage/data/$DB_DIR/$DB_FILE'
+		Evaluando en './$DB_DIR/$DB_FILE'
 		"
-
-		sqlite3 ./.flet/storage/data/${DB_DIR}/${DB_FILE} -cmd "
+        
+		sqlite3 ./${DB_DIR}/${DB_FILE} -cmd "
 		CREATE TABLE IF NOT EXISTS users(
 		users_id INTEGER PRIMARY KEY,
 		nombre TEXT,
@@ -32,15 +34,15 @@ if [ -n "$ADMIN" ] && \
 		activo INTEGER
 		);" .quit
 
-		if ! sqlite3 ./.flet/storage/data/${DB_DIR}/${DB_FILE} -cmd "
-			SELECT * 
-			FROM users 
-			WHERE nombre = '$ADMIN' AND password = '$ADMIN_PASSWORD';" .quit > /dev/null; then
-				sqlite3 ./.flet/storage/data/${DB_DIR}/${DB_FILE} -cmd "
-				INSERT INTO users(nombre, correo, password, activo) VALUES(
-				'$ADMIN', '$ADMIN_EMAIL', '$ADMIN_PASSWORD', 1
-				);
-				" .quit
+        USER_EXISTS=$(sqlite3 ./${DB_DIR}/${DB_FILE} "SELECT * FROM users WHERE nombre = '$ADMIN' AND password = '$ADMIN_PASSWORD';" .quit)
+
+        if [ -z "$USER_EXISTS" ]; then
+            echo "El usuario no existe, insertando credenciales..."
+            
+            sqlite3 ./${DB_DIR}/${DB_FILE} "
+            INSERT INTO users(nombre, correo, password, activo) 
+            VALUES('$ADMIN', '$ADMIN_EMAIL', '$ADMIN_PASSWORD', 1);
+            " .quit
 		else
 			echo -e "
 			La base de datos ya existe...
@@ -60,7 +62,7 @@ if [ -n "$ADMIN" ] && \
 else
 	echo -e "No se pudo configurar los accessos. No se encontraron 
 	las variables de entorno 'ADMIN', 'ADMIN_PASSWORD', 'ADMIN_EMAIL', 
-	'DB_DIR' & 'DB_FILE'. ❌"
+	'DB_DIR', 'DB_FILE' 'FLET_APP_STORAGE_DATA'. ❌"
+fi
 # Desactiva la exportación automática
 set +o allexport
-fi

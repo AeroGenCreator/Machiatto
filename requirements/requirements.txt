@@ -1,2 +1,2 @@
 flet[all]
-pancakes-orm
+pancakes-orm>6.2.10

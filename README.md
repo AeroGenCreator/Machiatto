@@ -60,12 +60,14 @@ pip install -r requirements/requirements.txt
 
 ```env
 # Minima configuracion:
+# Evitar caracteres: ''$
 
 ADMIN=admin
 ADMIN_PASSWORD=admin
 ADMIN_EMAIL=ejemplo@gmail.com
-DB_DIR=data
+DB_DIR=db # Coincidir directorio del ORM ⚠️
 DB_FILE=db.sqlite
+FLET_APP_STORAGE_DATA=db # Con el directorio de Flet ⚠️
 ```
 
 5. Correr el fichero `admin.sh`
