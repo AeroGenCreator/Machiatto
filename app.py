@@ -23,7 +23,6 @@ import flet as ft
 
 from machiatto.machiatto_gear import MainGear
 from machiatto.package_loader import load_models, mapper, read_manifest
-from packages.users.models.users import init_users
 
 # ============================================================================
 
@@ -33,10 +32,7 @@ container_items, sidebar_buttons, dynamic_models = read_manifest()
 load_models(dynamic_models)
 # 3. Mapea "Boton" | "evento"
 modulos = mapper(content=container_items, sidebar_button=sidebar_buttons)
-# 4. Paquete obligatorio: 'users'. Carga login keys.
-STATUS = init_users()
-print(STATUS)
-# 5. Fuentes de la aplicación
+# 4. Fuentes de la aplicación
 
 FUENTES = {
     "GeistSansBlack": "fonts/geist_sans/Geist-Black.ttf",

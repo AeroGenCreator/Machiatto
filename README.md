@@ -55,11 +55,13 @@ pip install -r requirements/requirements.txt
 4. Utilizar un `.env` para las configuraciones globales de sus proyectos.
 
 ```env
-# Solo Configuración Machiatto
+# Minima configuracion:
 
 ADMIN=admin
 ADMIN_PASSWORD=admin
 ADMIN_EMAIL=ejemplo@gmail.com
+DB_DIR=data
+DB_FILE=db.sqlite
 ```
 
 **Machiatto** busca todos sus modulos dentro del directorio packages que trae por defecto este repositorio. Ademas tanto `.env` como la validación de credenciales dependen del modulo pre-cargado `users`. Es vital mantener dicho modulo o de lo contrario ajustar para cualquier necesidad de desarrollo.
