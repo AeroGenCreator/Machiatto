@@ -73,5 +73,6 @@ class InputField:
     value: Optional[str]
     function: Callable
     settings: Optional[any]
+    key: str
 
 # ============================================================================

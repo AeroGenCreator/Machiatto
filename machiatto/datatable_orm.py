@@ -29,7 +29,8 @@ import datetime
 import re
 import uuid
 from functools import partial
-from typing import Callable, List, Optional
+from types import SimpleNamespace
+from typing import List, Optional
 
 import flet as ft
 from pancakes.models.model import PanCakesORM
@@ -626,6 +627,8 @@ class DatatableORM(ft.Column):
         Si se presiona Segunda Vez:
         -> Se borra el formulario -> Cierra Vista
         """
+        self.this_row = None
+        self.this_index = "IDxxx1"
         status = self.sidebar_container.visible
         if status:
             self.sidebar_container.visible = not self.sidebar_container.visible
@@ -1284,10 +1287,6 @@ class DatatableORM(ft.Column):
                     "constraints"
                 ]
                 max_length = constraints.get("max_length", None)
-                ge = constraints.get("ge", False)
-                gt = constraints.get("gt", False)
-                le = constraints.get("le", False)
-                lt = constraints.get("lt", False)
 
                 # Position: llave unica que almacena metadata 'procesamiento'.
                 COL_LABEL = MODEL._metadata[TABLE]["columns"][field_position]
@@ -1558,6 +1557,11 @@ class DatatableORM(ft.Column):
                             ft.Container(
                                 expand=True,
                                 border_radius=10,
+                                data={
+                                    "class": "InputField",
+                                    "function": OBJECT.function,
+                                    "response": OBJECT.key
+                                    },
                                 content=ft.Row(
                                     controls=[
                                         RESPONSE,
@@ -1567,17 +1571,11 @@ class DatatableORM(ft.Column):
                                                 font_family="GeistMonoMedium",
                                             ),
                                             icon=ft.Icons.CHECK,
-                                            on_click=lambda e, res=RESPONSE: (
-                                                self.send_response(
-                                                    e,
-                                                    response=res,
-                                                    function=OBJECT.function,
-                                                )
-                                            ),
+                                            on_click=self.send_response
                                         ),
-                                    ]
+                                    ],
                                 ),
-                            )
+                            ),
                         )
 
                 else:
@@ -1604,11 +1602,30 @@ class DatatableORM(ft.Column):
             horizontal=False,
         )
 
-    def send_response(self, e, response: ft.TextField, function: Callable):
-        self.response = response.value
-        function(self)
+    # === MANEJA LOS ENNVIOS DE RESPUESTA DE CONTROLADORES TIPO 'INPUTFIELD' ===
+
+    def send_response(self, e):
+        """Manejo de varios input fields"""
+        response = SimpleNamespace()
+        functions = []
+        for controller in self.form_widget.controls[0].controls:
+            if getattr(controller, "data", ""):
+                is_class = controller.data.get("class", "")
+                if is_class == "InputField":
+                    function = controller.data.get("function", "")
+                    label = controller.data.get("response", "")
+                    value = controller.content.controls[0].value
+                    if not function or not label:
+                        raise ValueError("Error controlador 'InputField'.")
+                    setattr(response, label, value)
+                    functions.append(function)
+        self.response = response
+        if functions:
+            for func in functions:
+                func(self)
 
     # === GUARDADO CONTROLADORES PERSONALIZADOS ===
+
     def ensure_store(self) -> None:
         """Para cualquier controlador personalizado, lo primero
         que se debe hacer es asegurar el guardado para obtener el 'id'."""
@@ -1623,6 +1640,7 @@ class DatatableORM(ft.Column):
             self.this_index = irow[0][0]
 
     # === REFRESCAR LA TABLA ===
+
     def refresh(self):
         # Cerrar sidebar - Limpiar contenido
         status = self.sidebar_container.visible
@@ -1669,6 +1687,7 @@ class DatatableORM(ft.Column):
         self.page.show_dialog(self.one2many_dialog)
 
     # === CAPA SUPERIOR; MONTAR WIDGETS ===
+
     def _layout_(self) -> None:
         header = ft.Row(
             controls=[self.top_container],
