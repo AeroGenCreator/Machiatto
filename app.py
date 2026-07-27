@@ -19,17 +19,34 @@
 
 # ============================================================================
 import os
+import sys
 
 # Modulos
 import flet as ft
 
-from machiatto.machiatto_gear import MainGear
-from machiatto.package_loader import load_models, mapper, read_manifest
+# Ruta absoluta del fichero actual.
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+# Establecer ruta raiz.
+os.chdir(PROJECT_ROOT)
+
+# Inyectamos la raíz en sys.path por si la librería busca módulos desde la raíz
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+# Importacion de librerias: Rutas Corregidas
+from machiatto.machiatto_gear import MainGear  # noqa: E402
+from machiatto.package_loader import (  # noqa: E402
+    load_models,
+    mapper,
+    read_manifest,
+)
 
 # ============================================================================
 
 # 0. Asegurar que se carguen cursores GTK/GNOME
 os.environ["GDK_BACKEND"] = "x11"
+# 1. Ruta absoluta de este afichero.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 1. Lectura de directorio 'packages'.
 container_items, sidebar_buttons, dynamic_models = read_manifest()
 # 2. Carga de todos los modelos declarados en el maniest
@@ -70,4 +87,4 @@ def main(page: ft.Page):
     page.add(shell)
 
 if __name__ == "__main__":
-    ft.app(main, assets_dir="assets")
+    ft.app(main, assets_dir=str(BASE_DIR) + "/assets")
