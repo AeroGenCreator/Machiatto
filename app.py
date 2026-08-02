@@ -45,10 +45,12 @@ from machiatto.package_loader import (  # noqa: E402
 
 # 0. Asegurar que se carguen cursores GTK/GNOME
 os.environ["GDK_BACKEND"] = "x11"
-# 1. Ruta absoluta de este afichero.
+# 1. Ruta absoluta de este fichero.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 1. Lectura de directorio 'packages'.
-container_items, sidebar_buttons, dynamic_models = read_manifest()
+container_items, sidebar_buttons, dynamic_models = read_manifest(
+    path=PROJECT_ROOT
+)
 # 2. Carga de todos los modelos declarados en el maniest
 load_models(dynamic_models)
 # 3. Mapea "Boton" | "evento"

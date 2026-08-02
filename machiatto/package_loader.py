@@ -34,15 +34,15 @@ from pathlib import Path
 
 # Por el momento ruta estatica 'packages'.
 # Constantes: Ruta / Keywords
-IMPORT_COMPLEMENT = "packages"
-ROOT = "Machiatto"
-CURRENT_DIRECTORY = Path.cwd()
-MAIN_PATH = str(CURRENT_DIRECTORY).split(ROOT)[0]
-PATH = Path(MAIN_PATH) / Path(ROOT) / IMPORT_COMPLEMENT
+IMPORT_COMPLEMENT = Path("packages")
 MANIFEST_KEY_WORD = "__manifest__.py"
 METADATA_KEY_WORD = "PACKAGE"
 
-def read_manifest(path=PATH):
+def read_manifest(path: Path):
+
+    # PATH se inyecta desde app.py - Ruta Raiz
+    # Se completa con "packages" para realizar busqeuda de modulos.
+    path = path / IMPORT_COMPLEMENT
 
     # Guarda: Nombre Directorio / Ruta Importación Al Manifest Python
     manifest = {}

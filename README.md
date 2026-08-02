@@ -58,10 +58,9 @@ pip install -r requirements/requirements.txt
 
 4. Utilizar un `.env` para las configuraciones globales del proyecto.
 
-```env
-# Minima configuracion:
-# Evitar caracteres: ''$
+- Evitar caracteres: ''$
 
+```env
 ADMIN=admin
 ADMIN_PASSWORD=admin
 ADMIN_EMAIL=ejemplo@gmail.com
